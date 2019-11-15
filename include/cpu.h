@@ -8,4 +8,7 @@ typedef struct {
     Memory memory;
 } CPU;
 
+void cpu_Initialise(CPU* cpu);
+void cpu_Tick(CPU* cpu);
+
 #endif
