@@ -83,6 +83,10 @@ int inst_ld_a_ib(CPU* cpu, void* data);
 int inst_add_a_b(CPU* cpu, void* data);
 int inst_add_a_a(CPU* cpu, void* data);
 
+int inst_cpl(CPU* cpu, void* data);
+int inst_ccf(CPU* cpu, void* data);
+int inst_scf(CPU* cpu, void* data);
+
 static const Instruction instruction_set[] = {
     [0x00] = (Instruction){"NOP",       inst_nop,   0},
 
@@ -148,6 +152,9 @@ static const Instruction instruction_set[] = {
     [0x32] = (Instruction){"SWAP D",    inst_swap_d,    0},
     
     [0x10] = (Instruction){"STOP",      inst_stop,  0}, //might be extended 0x10 0x00
+    [0x2F] = (Instruction){"CPL",      inst_cpl,  0}, 
+    [0x3F] = (Instruction){"CCF",      inst_ccf,  0}, 
+    [0x37] = (Instruction){"SCF",      inst_scf,  0}, 
     
     //INC NN
     [0x03] = (Instruction){"INC BC",    inst_inc_bc,    0},

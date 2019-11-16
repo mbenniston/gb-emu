@@ -135,3 +135,35 @@ int inst_stop(CPU* cpu, void* data)
     cpu_Stopped = true;
     return 4;
 }
+
+int inst_cpl(CPU* cpu, void* data)
+{
+    cpu->registers.A = ~cpu->registers.A;
+    flags_SetN(&cpu->registers.F);
+    flags_SetH(&cpu->registers.F);
+    return 4;
+}
+
+int inst_ccf(CPU* cpu, void* data)
+{
+    cpu->registers.A = ~cpu->registers.A;
+    if(flags_IsC(cpu->registers.F)) 
+        flags_ResetC(&cpu->registers.F);
+    else 
+        flags_SetC(&cpu->registers.F);
+    
+    flags_ResetH(&cpu->registers.F);
+    flags_ResetN(&cpu->registers.F);
+
+    return 4;
+}
+
+int inst_scf(CPU* cpu, void* data)
+{
+    flags_ResetH(&cpu->registers.F);
+    flags_ResetN(&cpu->registers.F);
+    flags_SetC(&cpu->registers.F);
+
+    return 4;
+}
+

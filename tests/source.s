@@ -1,5 +1,7 @@
 LD A,#
-0
+FF
+CPL
 LD B,A
 SWAP B
+SCF
 STOP
