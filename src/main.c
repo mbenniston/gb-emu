@@ -4,8 +4,10 @@
 #include <cfx/cfx.h>
 
 #include "../include/cpu.h"
+#include "../include/instructions.h"
 
 extern bool cpu_Stopped;
+extern int cpu_DebugCurrentInst;
 
 int main(int argc, char** argv) 
 {
@@ -14,12 +16,17 @@ int main(int argc, char** argv)
     CPU cpu;
     cpu_Initialise(&cpu);
 
-    cpu.registers.BC = 0xFF;
+    const char* fileName = argv[1];
+    FILE* file = fopen(fileName, "rb");
+    if(!file) return 1;
 
-    cpu.memory.ram[0] = 0x0B;
-    cpu.memory.ram[1] = 0x0B;
-    cpu.memory.ram[2] = 0x0B;
-    cpu.memory.ram[3] = 0x10;
+    cpu.memory.ram[0] = 0x69;
+
+    int c, inst = 1;
+    while((c = fgetc(file)) != EOF) {
+        cpu.memory.ram[inst] = c;
+        inst++;
+    }
 
     while(!winGetKey(WIN_KEY_Q)){
         winClear();
@@ -34,8 +41,8 @@ int main(int argc, char** argv)
         {
             rdown = false;
         }
-        //debug
 
+        //debug
         char debug_registers[1024];
         sprintf(debug_registers, "PC:%X SP:%X", 
             cpu.registers.PC, cpu.registers.SP);
@@ -51,8 +58,16 @@ int main(int argc, char** argv)
         dwDrawString(0, 4 * 8, 2, debug_registers, (Color){255,255,255});
 
 
+        sprintf(debug_registers, "CI: 0x%X, %s", 
+            cpu_DebugCurrentInst, instruction_set[cpu_DebugCurrentInst].name);
+        dwDrawString(0, 6 * 8, 2, debug_registers, (Color){255,255,255});
+
+        sprintf(debug_registers, "Z: %d, N: %d, H: %d, C: %d", 
+            flags_IsZ(cpu.registers.F), flags_IsN(cpu.registers.F), flags_IsH(cpu.registers.F), flags_IsC(cpu.registers.F));
+        dwDrawString(0, 8 * 8, 2, debug_registers, (Color){255,255,255});
+
         if(cpu_Stopped) {
-            dwDrawString(0, 6 * 8, 2, "STOPPED", (Color){255,50,50});
+            dwDrawString(0, 10 * 8, 2, "STOPPED", (Color){255,50,50});
         }
 
         winUpdate();

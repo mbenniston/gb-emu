@@ -8,6 +8,7 @@ byte Memory_Read_byte(Memory* memory, lbyte address)
 lbyte Memory_Read_lbyte(Memory* memory, lbyte address)
 {
     // lbyte l;
+    return 0;
 }
 
 

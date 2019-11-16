@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <stdbool.h>
 
 #include "../include/instructions.h"
 #include "../include/registers.h"
@@ -21,10 +23,28 @@ int main(int argc, char** argv)
     FILE* outfile = fopen(outputFileName, "wb");
     if(!outfile) return 1;
 
+    bool instFound;
     char buffer[255];
     while(fgets(buffer, 255, file) != NULL) {
+        instFound = false;
+
         for(int i = 0; i < sizeof(instruction_set) / sizeof(Instruction); i++) {
-            if(instruction_set[i].name != NULL && strncmp(instruction_set[i].name, buffer, strlen(instruction_set[i].name)) == 0) { fwrite(&i, 1, 1, outfile); }
+            if(instruction_set[i].name != NULL && strncmp(instruction_set[i].name, buffer, strlen(instruction_set[i].name)) == 0) { 
+                fwrite(&i, 1, 1, outfile); 
+                instFound = true;
+            } 
+        }
+
+        if(instFound == false) {
+            char* pEnd;
+            unsigned int data = strtoll(buffer, &pEnd, 16);
+            if(data != 0 || buffer[0] == '0') {
+                unsigned char datab = data & 0xFF;
+                fwrite(&datab, 1, 1, outfile); 
+            } else {
+                printf("Unknown instruction: %s\n", buffer);
+                return 1;
+            }
         }
     }
 
