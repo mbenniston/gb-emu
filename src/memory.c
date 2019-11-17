@@ -11,7 +11,10 @@ lbyte Memory_Read_lbyte(Memory* memory, lbyte address)
     return 0;
 }
 
-
+void Memory_Write_byte(Memory* memory, lbyte address, byte data)
+{
+    memory->ram[address] = data;
+}
 
 
 

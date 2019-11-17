@@ -13,8 +13,17 @@
 
 int main(int argc, char** argv) 
 {
-    if(argc < 3) return 1;
-    
+    if(argc < 3) {
+        if(argc == 2 && strcmp("-l", argv[1]) == 0) {
+            
+            for(int i = 0; i < sizeof(instruction_set) / sizeof(Instruction); i++) {
+                if(instruction_set[i].name != NULL) puts(instruction_set[i].name);
+            }
+
+            return 0;
+        }
+        return 1;
+    }
     if(strcmp("-d", argv[2]) == 0) {
         const char* fileName = argv[1];
         FILE* file = fopen(fileName, "rb");

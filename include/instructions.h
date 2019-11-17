@@ -89,10 +89,25 @@ int inst_ld_e_ahl(CPU* cpu, void* data);
 int inst_ld_h_ahl(CPU* cpu, void* data);
 int inst_ld_l_ahl(CPU* cpu, void* data);
 
-
-
+int inst_ld_abc_a(CPU* cpu, void* data);
+int inst_ld_ade_a(CPU* cpu, void* data);
+int inst_ld_ann_a(CPU* cpu, void* data);
+int inst_ld_ahl_a(CPU* cpu, void* data);
+int inst_ld_ahl_b(CPU* cpu, void* data);
+int inst_ld_ahl_c(CPU* cpu, void* data);
+int inst_ld_ahl_d(CPU* cpu, void* data);
+int inst_ld_ahl_e(CPU* cpu, void* data);
+int inst_ld_ahl_h(CPU* cpu, void* data);
+int inst_ld_ahl_l(CPU* cpu, void* data);
+int inst_ld_ahl_ib(CPU* cpu, void* data);
 
 int inst_ld_a_ib(CPU* cpu, void* data);
+int inst_ld_b_ib(CPU* cpu, void* data);
+int inst_ld_c_ib(CPU* cpu, void* data);
+int inst_ld_d_ib(CPU* cpu, void* data);
+int inst_ld_e_ib(CPU* cpu, void* data);
+int inst_ld_h_ib(CPU* cpu, void* data);
+int inst_ld_l_ib(CPU* cpu, void* data);
 
 int inst_add_a_b(CPU* cpu, void* data);
 int inst_add_a_a(CPU* cpu, void* data);
@@ -101,7 +116,7 @@ int inst_cpl(CPU* cpu, void* data);
 int inst_ccf(CPU* cpu, void* data);
 int inst_scf(CPU* cpu, void* data);
 
-
+int inst_jp_nn(CPU* cpu, void* data);
 
 static const Instruction instruction_set[] = {
     [0x00] = (Instruction){"NOP",       inst_nop,   0},
@@ -159,6 +174,12 @@ static const Instruction instruction_set[] = {
     [0x6D] = (Instruction){"LD L,H",    inst_ld_l_h,    0},
 
     [0x3E] = (Instruction){"LD A,#",    inst_ld_a_ib,    1},
+    [0x06] = (Instruction){"LD B,#",    inst_ld_b_ib,    1},
+    [0x0E] = (Instruction){"LD C,#",    inst_ld_c_ib,    1},
+    [0x16] = (Instruction){"LD D,#",    inst_ld_d_ib,    1},
+    [0x1E] = (Instruction){"LD E,#",    inst_ld_e_ib,    1},
+    [0x26] = (Instruction){"LD H,#",    inst_ld_h_ib,    1},
+    [0x2E] = (Instruction){"LD L,#",    inst_ld_l_ib,    1},
     
     [0x0A] = (Instruction){"LD A,(BC)",    inst_ld_a_abc,    0},
     [0x1A] = (Instruction){"LD A,(DE)",    inst_ld_a_ade,    0},
@@ -171,6 +192,18 @@ static const Instruction instruction_set[] = {
     [0x66] = (Instruction){"LD H,(HL)",    inst_ld_h_ahl,    0},
     [0x6E] = (Instruction){"LD L,(HL)",    inst_ld_l_ahl,    0},
 
+    [0x02] = (Instruction){"LD (BC),A",    inst_ld_abc_a,    0},
+    [0x12] = (Instruction){"LD (DE),A",    inst_ld_ade_a,    0},
+    [0x77] = (Instruction){"LD (HL),A",    inst_ld_ahl_a,    0},
+    [0xEA] = (Instruction){"LD (nn),A",    inst_ld_ann_a,    2},
+    [0x70] = (Instruction){"LD (HL),B",    inst_ld_ahl_b,    0},
+    [0x71] = (Instruction){"LD (HL),C",    inst_ld_ahl_c,    0},
+    [0x72] = (Instruction){"LD (HL),D",    inst_ld_ahl_d,    0},
+    [0x73] = (Instruction){"LD (HL),E",    inst_ld_ahl_e,    0},
+    [0x74] = (Instruction){"LD (HL),H",    inst_ld_ahl_h,    0},
+    [0x75] = (Instruction){"LD (HL),L",    inst_ld_ahl_l,    0},
+    [0x36] = (Instruction){"LD (HL),n",    inst_ld_ahl_ib,    0},
+
     [0x87] = (Instruction){"ADD A,A",    inst_add_a_a,    0},
     [0x80] = (Instruction){"ADD A,B",    inst_add_a_b,    0},
 
@@ -182,6 +215,8 @@ static const Instruction instruction_set[] = {
     [0x2F] = (Instruction){"CPL",      inst_cpl,  0}, 
     [0x3F] = (Instruction){"CCF",      inst_ccf,  0}, 
     [0x37] = (Instruction){"SCF",      inst_scf,  0}, 
+
+    [0xC3] = (Instruction){"JP nn",      inst_jp_nn,  2}, 
     
     //INC NN
     [0x03] = (Instruction){"INC BC",    inst_inc_bc,    0},

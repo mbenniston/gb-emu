@@ -6,10 +6,10 @@
 
 typedef struct 
 {
-    union  { lbyte AF; struct { byte A, F; }; };
-    union  { lbyte BC; struct { byte B, C; }; };
-    union  { lbyte DE; struct { byte D, E; }; };
-    union  { lbyte HL; struct { byte H, L; }; };
+    union  { lbyte AF; struct { byte F, A; }; };
+    union  { lbyte BC; struct { byte C, B; }; };
+    union  { lbyte DE; struct { byte E, D; }; };
+    union  { lbyte HL; struct { byte L, H; }; };
     lbyte SP;
     lbyte PC;
 } RegisterBank;

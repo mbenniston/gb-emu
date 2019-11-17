@@ -20,10 +20,7 @@ int main(int argc, char** argv)
     FILE* file = fopen(fileName, "rb");
     if(!file) return 1;
 
-    cpu.memory.ram[0] = 0x69;
-    cpu.memory.ram[0x01FF] = 0x69;
-
-    int c, inst = 1;
+    int c, inst = 0;
     while((c = fgetc(file)) != EOF) {
         cpu.memory.ram[inst] = c;
         inst++;
@@ -33,7 +30,7 @@ int main(int argc, char** argv)
         winClear();
 
         static int rdown = false;
-        if(winGetKey(WIN_KEY_R) && !rdown)
+        if(winGetKey(WIN_KEY_R) && !rdown && !cpu_Stopped)
         {
             rdown = true;
             cpu_Tick(&cpu);
@@ -69,6 +66,25 @@ int main(int argc, char** argv)
 
         if(cpu_Stopped) {
             dwDrawString(0, 10 * 8, 2, "STOPPED", (Color){255,50,50});
+        }
+
+        int immCount = 0;
+        for(int i = 0; i < 16; i++) {
+            byte b = cpu.memory.ram[i];
+
+            if(immCount > 0) {
+                sprintf(debug_registers, "0x%X: #0x%X", i, b);
+                immCount--;
+            } else {
+                if(instruction_set[b].name != NULL) {
+                    sprintf(debug_registers, "0x%X: 0x%X, %s", i, b, instruction_set[b].name);
+                    immCount += instruction_set[b].numImmediates;
+                } 
+            }
+
+
+            dwDrawString(0, (2 * i + 12) * 8, 2, debug_registers, (Color){255,255,255});
+            if(cpu.registers.PC == i) { dwDrawString((strlen(debug_registers) * 2 * 8) + 16, (2 * i + 12) * 8, 2, "<-", (Color){50,255,50}); }
         }
 
         winUpdate();

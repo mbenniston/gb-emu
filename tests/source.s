@@ -1,4 +1,4 @@
-LD A,(nn)
-FF
-1
+LD A,#
+69
+ADD A,A
 STOP
