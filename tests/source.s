@@ -1,7 +1,4 @@
-LD A,#
+LD A,(nn)
 FF
-CPL
-LD B,A
-SWAP B
-SCF
+1
 STOP

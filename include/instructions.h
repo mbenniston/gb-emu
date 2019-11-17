@@ -78,6 +78,20 @@ int inst_ld_l_d(CPU* cpu, void* data);
 int inst_ld_l_e(CPU* cpu, void* data);
 int inst_ld_l_h(CPU* cpu, void* data);
 
+int inst_ld_a_abc(CPU* cpu, void* data);
+int inst_ld_a_ade(CPU* cpu, void* data);
+int inst_ld_a_ann(CPU* cpu, void* data);
+int inst_ld_a_ahl(CPU* cpu, void* data);
+int inst_ld_b_ahl(CPU* cpu, void* data);
+int inst_ld_c_ahl(CPU* cpu, void* data);
+int inst_ld_d_ahl(CPU* cpu, void* data);
+int inst_ld_e_ahl(CPU* cpu, void* data);
+int inst_ld_h_ahl(CPU* cpu, void* data);
+int inst_ld_l_ahl(CPU* cpu, void* data);
+
+
+
+
 int inst_ld_a_ib(CPU* cpu, void* data);
 
 int inst_add_a_b(CPU* cpu, void* data);
@@ -86,6 +100,8 @@ int inst_add_a_a(CPU* cpu, void* data);
 int inst_cpl(CPU* cpu, void* data);
 int inst_ccf(CPU* cpu, void* data);
 int inst_scf(CPU* cpu, void* data);
+
+
 
 static const Instruction instruction_set[] = {
     [0x00] = (Instruction){"NOP",       inst_nop,   0},
@@ -143,6 +159,17 @@ static const Instruction instruction_set[] = {
     [0x6D] = (Instruction){"LD L,H",    inst_ld_l_h,    0},
 
     [0x3E] = (Instruction){"LD A,#",    inst_ld_a_ib,    1},
+    
+    [0x0A] = (Instruction){"LD A,(BC)",    inst_ld_a_abc,    0},
+    [0x1A] = (Instruction){"LD A,(DE)",    inst_ld_a_ade,    0},
+    [0x7E] = (Instruction){"LD A,(HL)",    inst_ld_a_ahl,    0},
+    [0xFA] = (Instruction){"LD A,(nn)",    inst_ld_a_ann,    2},
+    [0x46] = (Instruction){"LD B,(HL)",    inst_ld_b_ahl,    0},
+    [0x4E] = (Instruction){"LD C,(HL)",    inst_ld_c_ahl,    0},
+    [0x56] = (Instruction){"LD D,(HL)",    inst_ld_d_ahl,    0},
+    [0x5E] = (Instruction){"LD E,(HL)",    inst_ld_e_ahl,    0},
+    [0x66] = (Instruction){"LD H,(HL)",    inst_ld_h_ahl,    0},
+    [0x6E] = (Instruction){"LD L,(HL)",    inst_ld_l_ahl,    0},
 
     [0x87] = (Instruction){"ADD A,A",    inst_add_a_a,    0},
     [0x80] = (Instruction){"ADD A,B",    inst_add_a_b,    0},

@@ -104,6 +104,18 @@ int inst_ld_l_d(CPU* cpu, void* data) { cpu->registers.L = cpu->registers.D; ret
 int inst_ld_l_e(CPU* cpu, void* data) { cpu->registers.L = cpu->registers.E; return 4; }
 int inst_ld_l_h(CPU* cpu, void* data) { cpu->registers.L = cpu->registers.H; return 4; }
 
+int inst_ld_a_ahl(CPU* cpu, void* data) { cpu->registers.A = Memory_Read_byte(&cpu->memory, cpu->registers.HL); return 8; }
+int inst_ld_b_ahl(CPU* cpu, void* data) { cpu->registers.B = Memory_Read_byte(&cpu->memory, cpu->registers.HL); return 8; }
+int inst_ld_c_ahl(CPU* cpu, void* data) { cpu->registers.C = Memory_Read_byte(&cpu->memory, cpu->registers.HL); return 8; }
+int inst_ld_d_ahl(CPU* cpu, void* data) { cpu->registers.D = Memory_Read_byte(&cpu->memory, cpu->registers.HL); return 8; }
+int inst_ld_e_ahl(CPU* cpu, void* data) { cpu->registers.E = Memory_Read_byte(&cpu->memory, cpu->registers.HL); return 8; }
+int inst_ld_h_ahl(CPU* cpu, void* data) { cpu->registers.H = Memory_Read_byte(&cpu->memory, cpu->registers.HL); return 8; }
+int inst_ld_l_ahl(CPU* cpu, void* data) { cpu->registers.L = Memory_Read_byte(&cpu->memory, cpu->registers.HL); return 8; }
+
+int inst_ld_a_abc(CPU* cpu, void* data) { cpu->registers.A = Memory_Read_byte(&cpu->memory, cpu->registers.BC); return 8; }
+int inst_ld_a_ade(CPU* cpu, void* data) { cpu->registers.A = Memory_Read_byte(&cpu->memory, cpu->registers.DE); return 8; }
+int inst_ld_a_ann(CPU* cpu, void* data) { cpu->registers.A = Memory_Read_byte(&cpu->memory, *(lbyte*)data); return 16; }
+
 int inst_add_a_a(CPU* cpu, void* data) 
 {
     cpu->registers.A += cpu->registers.A;

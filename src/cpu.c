@@ -21,10 +21,19 @@ void cpu_Tick(CPU* cpu)
     switch (instruction.numImmediates)
     {
     case 1:
-    {
-        byte value = Memory_Read_byte(&cpu->memory, ++cpu->registers.PC);
-        instruction.handler(cpu, &value);
-    }
+        {
+            byte value = Memory_Read_byte(&cpu->memory, ++cpu->registers.PC);
+            instruction.handler(cpu, &value);
+        }
+        break;
+    case 2:
+        {
+            //lsb first
+            byte value1 = Memory_Read_byte(&cpu->memory, ++cpu->registers.PC);
+            byte value2 = Memory_Read_byte(&cpu->memory, ++cpu->registers.PC);
+            lbyte value = (value2 << 8) | value1;
+            instruction.handler(cpu, &value);
+        }
         break;
     
     default:

@@ -21,6 +21,7 @@ int main(int argc, char** argv)
     if(!file) return 1;
 
     cpu.memory.ram[0] = 0x69;
+    cpu.memory.ram[0x01FF] = 0x69;
 
     int c, inst = 1;
     while((c = fgetc(file)) != EOF) {
