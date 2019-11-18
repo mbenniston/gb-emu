@@ -118,6 +118,47 @@ int inst_scf(CPU* cpu, void* data);
 
 int inst_jp_nn(CPU* cpu, void* data);
 
+int inst_push_af(CPU* cpu, void* data);
+int inst_push_bc(CPU* cpu, void* data);
+int inst_push_de(CPU* cpu, void* data);
+int inst_push_hl(CPU* cpu, void* data);
+
+int inst_pop_af(CPU* cpu, void* data);
+int inst_pop_bc(CPU* cpu, void* data);
+int inst_pop_de(CPU* cpu, void* data);
+int inst_pop_hl(CPU* cpu, void* data);
+
+int inst_and_a(CPU* cpu, void* data);
+int inst_and_b(CPU* cpu, void* data);
+int inst_and_c(CPU* cpu, void* data);
+int inst_and_d(CPU* cpu, void* data);
+int inst_and_e(CPU* cpu, void* data);
+int inst_and_h(CPU* cpu, void* data);
+int inst_and_l(CPU* cpu, void* data);
+int inst_and_ib(CPU* cpu, void* data);
+int inst_and_ahl(CPU* cpu, void* data);
+
+int inst_or_a(CPU* cpu, void* data);
+int inst_or_b(CPU* cpu, void* data);
+int inst_or_c(CPU* cpu, void* data);
+int inst_or_d(CPU* cpu, void* data);
+int inst_or_e(CPU* cpu, void* data);
+int inst_or_h(CPU* cpu, void* data);
+int inst_or_l(CPU* cpu, void* data);
+int inst_or_ib(CPU* cpu, void* data);
+int inst_or_ahl(CPU* cpu, void* data);
+
+int inst_xor_a(CPU* cpu, void* data);
+int inst_xor_b(CPU* cpu, void* data);
+int inst_xor_c(CPU* cpu, void* data);
+int inst_xor_d(CPU* cpu, void* data);
+int inst_xor_e(CPU* cpu, void* data);
+int inst_xor_h(CPU* cpu, void* data);
+int inst_xor_l(CPU* cpu, void* data);
+int inst_xor_ib(CPU* cpu, void* data);
+int inst_xor_ahl(CPU* cpu, void* data);
+
+
 static const Instruction instruction_set[] = {
     [0x00] = (Instruction){"NOP",       inst_nop,   0},
 
@@ -217,7 +258,54 @@ static const Instruction instruction_set[] = {
     [0x37] = (Instruction){"SCF",      inst_scf,  0}, 
 
     [0xC3] = (Instruction){"JP nn",      inst_jp_nn,  2}, 
-    
+
+    //push    
+    [0xF5] = (Instruction){"PUSH AF",      inst_push_af,  0}, 
+    [0xC5] = (Instruction){"PUSH BC",      inst_push_bc,  0}, 
+    [0xD5] = (Instruction){"PUSH DE",      inst_push_de,  0}, 
+    [0xE5] = (Instruction){"PUSH HL",      inst_push_hl,  0}, 
+
+    //pop
+    [0xF1] = (Instruction){"POP AF",      inst_pop_af,  0}, 
+    [0xC1] = (Instruction){"POP BC",      inst_pop_bc,  0}, 
+    [0xD1] = (Instruction){"POP DE",      inst_pop_de,  0}, 
+    [0xE1] = (Instruction){"POP HL",      inst_pop_hl,  0}, 
+
+    //AND
+    [0xA7] = (Instruction){"AND A", inst_and_a, 0},
+    [0xA0] = (Instruction){"AND B", inst_and_b, 0},
+    [0xA1] = (Instruction){"AND C", inst_and_c, 0},
+    [0xA2] = (Instruction){"AND D", inst_and_d, 0},
+    [0xA3] = (Instruction){"AND E", inst_and_e, 0},
+    [0xA4] = (Instruction){"AND H", inst_and_h, 0},
+    [0xA5] = (Instruction){"AND L", inst_and_l, 0},
+    [0xA6] = (Instruction){"AND (HL)", inst_and_ahl, 0},
+    [0xE6] = (Instruction){"AND #", inst_and_ib, 1},
+
+    //OR
+    [0xB7] = (Instruction){"OR A", inst_or_a, 0},
+    [0xB0] = (Instruction){"OR B", inst_or_b, 0},
+    [0xB1] = (Instruction){"OR C", inst_or_c, 0},
+    [0xB2] = (Instruction){"OR D", inst_or_d, 0},
+    [0xB3] = (Instruction){"OR E", inst_or_e, 0},
+    [0xB4] = (Instruction){"OR H", inst_or_h, 0},
+    [0xB5] = (Instruction){"OR L", inst_or_l, 0},
+    [0xB6] = (Instruction){"OR (HL)", inst_or_ahl, 0},
+    [0xF6] = (Instruction){"OR #", inst_or_ib, 1},
+
+
+    //XOR
+    [0xAF] = (Instruction){"XOR A", inst_xor_a, 0},
+    [0xA8] = (Instruction){"XOR B", inst_xor_b, 0},
+    [0xA9] = (Instruction){"XOR C", inst_xor_c, 0},
+    [0xAA] = (Instruction){"XOR D", inst_xor_d, 0},
+    [0xAB] = (Instruction){"XOR E", inst_xor_e, 0},
+    [0xAC] = (Instruction){"XOR H", inst_xor_h, 0},
+    [0xAD] = (Instruction){"XOR L", inst_xor_l, 0},
+    [0xAE] = (Instruction){"XOR (HL)", inst_xor_ahl, 0},
+    [0xEE] = (Instruction){"XOR #", inst_xor_ib, 1},
+
+
     //INC NN
     [0x03] = (Instruction){"INC BC",    inst_inc_bc,    0},
     [0x13] = (Instruction){"INC DE",    inst_inc_de,    0},

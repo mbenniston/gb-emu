@@ -10,6 +10,7 @@ lbyte cpu_DebugCurrentInst = 0xFF;
 void cpu_Initialise(CPU* cpu)
 {
     memset(&cpu->registers, 0, sizeof(RegisterBank));
+    cpu->registers.SP = 0xFFFE;
 }
 
 void cpu_Tick(CPU* cpu) 

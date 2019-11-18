@@ -30,14 +30,19 @@ int main(int argc, char** argv)
         winClear();
 
         static int rdown = false;
-        if(winGetKey(WIN_KEY_R) && !rdown && !cpu_Stopped)
-        {
-            rdown = true;
+        //free run
+        if(winGetKey(WIN_KEY_SPACE))
             cpu_Tick(&cpu);
-        } 
-        else if(!winGetKey(WIN_KEY_R) && rdown)
-        {
-            rdown = false;
+        else {
+            if(winGetKey(WIN_KEY_R) && !rdown && !cpu_Stopped)
+            {
+                rdown = true;
+                cpu_Tick(&cpu);
+            } 
+            else if(!winGetKey(WIN_KEY_R) && rdown)
+            {
+                rdown = false;
+            }
         }
 
         //debug

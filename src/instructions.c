@@ -1,6 +1,7 @@
 #include "../include/instructions.h"
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 extern bool cpu_Stopped;
@@ -205,4 +206,89 @@ int inst_jp_nn(CPU* cpu, void* data)
     return 12;
 }
 
+void stack_push(CPU* cpu, lbyte data)
+{
+    byte low_byte = data & 0xFF, high_byte = data >> 8;
+    cpu->registers.SP--;
+    Memory_Write_byte(&cpu->memory, cpu->registers.SP, low_byte);
+    cpu->registers.SP--;
+    Memory_Write_byte(&cpu->memory, cpu->registers.SP, high_byte);
+}
 
+lbyte stack_pop(CPU* cpu)
+{
+    byte low_byte, high_byte;
+    high_byte = Memory_Read_byte(&cpu->memory, cpu->registers.SP);
+    cpu->registers.SP++;
+    low_byte = Memory_Read_byte(&cpu->memory, cpu->registers.SP);
+    cpu->registers.SP++;
+    return low_byte + (high_byte << 8);
+}
+
+int inst_push_af(CPU* cpu, void* data) { stack_push(cpu, cpu->registers.AF); return 16; }
+int inst_push_bc(CPU* cpu, void* data) { stack_push(cpu, cpu->registers.BC); return 16; }
+int inst_push_de(CPU* cpu, void* data) { stack_push(cpu, cpu->registers.DE); return 16; }
+int inst_push_hl(CPU* cpu, void* data) { stack_push(cpu, cpu->registers.HL); return 16; }
+
+int inst_pop_af(CPU* cpu, void* data) { cpu->registers.AF = stack_pop(cpu); return 12; }
+int inst_pop_bc(CPU* cpu, void* data) { cpu->registers.BC = stack_pop(cpu); return 12; }
+int inst_pop_de(CPU* cpu, void* data) { cpu->registers.DE = stack_pop(cpu); return 12; }
+int inst_pop_hl(CPU* cpu, void* data) { cpu->registers.HL = stack_pop(cpu); return 12; }
+
+void and_a(CPU* cpu, byte b)
+{
+    cpu->registers.A &= b;
+    if(cpu->registers.A == 0) flags_SetZ(&cpu->registers.F); else flags_ResetZ(&cpu->registers.F);
+    flags_ResetN(&cpu->registers.F);
+    flags_SetH(&cpu->registers.F);
+    flags_ResetC(&cpu->registers.F);
+}
+
+int inst_and_a(CPU* cpu, void* data) { and_a(cpu, cpu->registers.A); return 4; }
+int inst_and_b(CPU* cpu, void* data) { and_a(cpu, cpu->registers.B); return 4; }
+int inst_and_c(CPU* cpu, void* data) { and_a(cpu, cpu->registers.C); return 4; }
+int inst_and_d(CPU* cpu, void* data) { and_a(cpu, cpu->registers.D); return 4; }
+int inst_and_e(CPU* cpu, void* data) { and_a(cpu, cpu->registers.E); return 4; }
+int inst_and_h(CPU* cpu, void* data) { and_a(cpu, cpu->registers.H); return 4; }
+int inst_and_l(CPU* cpu, void* data) { and_a(cpu, cpu->registers.L); return 4; }
+int inst_and_ahl(CPU* cpu, void* data) { and_a(cpu, Memory_Read_byte(&cpu->memory, cpu->registers.HL)); return 8; }
+int inst_and_ib(CPU* cpu, void* data) { and_a(cpu, *(byte*)data); return 8; }
+
+
+void or_a(CPU* cpu, byte b)
+{
+    cpu->registers.A |= b;
+    if(cpu->registers.A == 0) flags_SetZ(&cpu->registers.F); else flags_ResetZ(&cpu->registers.F);
+    flags_ResetN(&cpu->registers.F);
+    flags_ResetH(&cpu->registers.F);
+    flags_ResetC(&cpu->registers.F);
+}
+
+int inst_or_a(CPU* cpu, void* data) { or_a(cpu, cpu->registers.A); return 4; }
+int inst_or_b(CPU* cpu, void* data) { or_a(cpu, cpu->registers.B); return 4; }
+int inst_or_c(CPU* cpu, void* data) { or_a(cpu, cpu->registers.C); return 4; }
+int inst_or_d(CPU* cpu, void* data) { or_a(cpu, cpu->registers.D); return 4; }
+int inst_or_e(CPU* cpu, void* data) { or_a(cpu, cpu->registers.E); return 4; }
+int inst_or_h(CPU* cpu, void* data) { or_a(cpu, cpu->registers.H); return 4; }
+int inst_or_l(CPU* cpu, void* data) { or_a(cpu, cpu->registers.L); return 4; }
+int inst_or_ahl(CPU* cpu, void* data) { or_a(cpu, Memory_Read_byte(&cpu->memory, cpu->registers.HL)); return 8; }
+int inst_or_ib(CPU* cpu, void* data) { or_a(cpu, *(byte*)data); return 8; }
+
+void xor_a(CPU* cpu, byte b)
+{
+    cpu->registers.A ^= b;
+    if(cpu->registers.A == 0) flags_SetZ(&cpu->registers.F); else flags_ResetZ(&cpu->registers.F);
+    flags_ResetN(&cpu->registers.F);
+    flags_ResetH(&cpu->registers.F);
+    flags_ResetC(&cpu->registers.F);
+}
+
+int inst_xor_a(CPU* cpu, void* data) { xor_a(cpu, cpu->registers.A); return 4; }
+int inst_xor_b(CPU* cpu, void* data) { xor_a(cpu, cpu->registers.B); return 4; }
+int inst_xor_c(CPU* cpu, void* data) { xor_a(cpu, cpu->registers.C); return 4; }
+int inst_xor_d(CPU* cpu, void* data) { xor_a(cpu, cpu->registers.D); return 4; }
+int inst_xor_e(CPU* cpu, void* data) { xor_a(cpu, cpu->registers.E); return 4; }
+int inst_xor_h(CPU* cpu, void* data) { xor_a(cpu, cpu->registers.H); return 4; }
+int inst_xor_l(CPU* cpu, void* data) { xor_a(cpu, cpu->registers.L); return 4; }
+int inst_xor_ahl(CPU* cpu, void* data) { xor_a(cpu, Memory_Read_byte(&cpu->memory, cpu->registers.HL)); return 8; }
+int inst_xor_ib(CPU* cpu, void* data) { xor_a(cpu, *(byte*)data); return 8; }

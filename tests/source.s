@@ -1,4 +1,12 @@
+LD H,#
+10
+LD L,#
+10
 LD A,#
 69
-ADD A,A
+LD (HL),A
+LD A,#
+F
+XOR (HL)
+XOR (HL)
 STOP
