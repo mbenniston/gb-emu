@@ -109,6 +109,9 @@ int inst_ld_e_ib(CPU* cpu, void* data);
 int inst_ld_h_ib(CPU* cpu, void* data);
 int inst_ld_l_ib(CPU* cpu, void* data);
 
+int inst_ld_ac_a(CPU* cpu, void* data);
+int inst_ld_a_ac(CPU* cpu, void* data);
+
 int inst_add_a_b(CPU* cpu, void* data);
 int inst_add_a_a(CPU* cpu, void* data);
 
@@ -244,6 +247,9 @@ static const Instruction instruction_set[] = {
     [0x74] = (Instruction){"LD (HL),H",    inst_ld_ahl_h,    0},
     [0x75] = (Instruction){"LD (HL),L",    inst_ld_ahl_l,    0},
     [0x36] = (Instruction){"LD (HL),n",    inst_ld_ahl_ib,    0},
+
+    [0xE2] = (Instruction){"LD (C),A",    inst_ld_ac_a,    0},
+    [0xF2] = (Instruction){"LD A,(C)",    inst_ld_a_ac,    0},
 
     [0x87] = (Instruction){"ADD A,A",    inst_add_a_a,    0},
     [0x80] = (Instruction){"ADD A,B",    inst_add_a_b,    0},
