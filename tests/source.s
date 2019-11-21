@@ -1,3 +1,16 @@
+JP nn
+6
+0
+LD A,#
+69
+RET
+LD A,#
+FF
+CALL nn
+3
+0
+LD A,#
+FF
 LD A,#
 FF
 LD B,#

@@ -265,6 +265,9 @@ static const Instruction instruction_set[] = {
 
     [0xC3] = (Instruction){"JP nn",      inst_jp_nn,  2}, 
 
+    [0xCD] = (Instruction){"CALL nn",   inst_call_nn,   2},
+    [0xC9] = (Instruction){"RET",   inst_ret,   0},
+
     //push    
     [0xF5] = (Instruction){"PUSH AF",      inst_push_af,  0}, 
     [0xC5] = (Instruction){"PUSH BC",      inst_push_bc,  0}, 

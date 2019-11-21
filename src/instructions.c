@@ -304,3 +304,6 @@ int inst_xor_h(CPU* cpu, void* data) { xor_a(cpu, cpu->registers.H); return 4; }
 int inst_xor_l(CPU* cpu, void* data) { xor_a(cpu, cpu->registers.L); return 4; }
 int inst_xor_ahl(CPU* cpu, void* data) { xor_a(cpu, Memory_Read_byte(&cpu->memory, cpu->registers.HL)); return 8; }
 int inst_xor_ib(CPU* cpu, void* data) { xor_a(cpu, *(byte*)data); return 8; }
+
+int inst_call_nn(CPU* cpu, void* data) { stack_push(cpu, cpu->registers.PC); cpu->registers.PC = *(lbyte*)data; return 12;}
+int inst_ret(CPU* cpu, void* data) { cpu->registers.PC = stack_pop(cpu); return 8;}
