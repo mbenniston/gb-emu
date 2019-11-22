@@ -161,6 +161,9 @@ int inst_xor_l(CPU* cpu, void* data);
 int inst_xor_ib(CPU* cpu, void* data);
 int inst_xor_ahl(CPU* cpu, void* data);
 
+int inst_call_nn(CPU* cpu, void* data);
+int inst_ret(CPU* cpu, void* data);
+
 
 static const Instruction instruction_set[] = {
     [0x00] = (Instruction){"NOP",       inst_nop,   0},
