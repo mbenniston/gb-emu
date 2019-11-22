@@ -92,6 +92,18 @@ int main(int argc, char** argv)
             if(cpu.registers.PC == i) { dwDrawString((strlen(debug_registers) * 2 * 8) + 16, (2 * i + 12) * 8, 2, "<-", (Color){50,255,50}); }
         }
 
+        //draw stack 
+
+        for(int i = 0; i < 16; i++) {
+            byte b = cpu.memory.ram[0xFFFE - i];
+
+            sprintf(debug_registers, "0x%X: #0x%X", 0xFFFE - i, b);
+
+            dwDrawString(800 - strlen(debug_registers) * 2 * 8, (2 * i + 12) * 8, 2, debug_registers, (Color){255,255,255});
+            if(cpu.registers.SP == (0xFFFE - i)) { dwDrawString(800 - (strlen(debug_registers) * 2 * 8) -32, (2 * i + 12) * 8, 2, "->", (Color){50,50,255}); }
+        }
+
+
         winUpdate();
     }
 

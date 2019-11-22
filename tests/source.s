@@ -1,19 +1,10 @@
-JP nn
-6
-0
-LD A,#
-69
-RET
-LD A,#
-FF
-CALL nn
-3
-0
-LD A,#
-FF
-LD A,#
-FF
 LD B,#
-1
-ADD A,B
+69
+LD C,#
+69
+PUSH BC
+INC BC
+JP nn
+0
+0
 STOP
