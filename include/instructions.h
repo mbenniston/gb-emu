@@ -115,11 +115,39 @@ int inst_ld_a_ac(CPU* cpu, void* data);
 int inst_add_a_b(CPU* cpu, void* data);
 int inst_add_a_a(CPU* cpu, void* data);
 
+int inst_sub_a(CPU* cpu, void* data);
+int inst_sub_b(CPU* cpu, void* data);
+int inst_sub_c(CPU* cpu, void* data);
+int inst_sub_d(CPU* cpu, void* data);
+int inst_sub_e(CPU* cpu, void* data);
+int inst_sub_h(CPU* cpu, void* data);
+int inst_sub_l(CPU* cpu, void* data);
+int inst_sub_ahl(CPU* cpu, void* data);
+int inst_sub_ib(CPU* cpu, void* data);
+
+
+int inst_cp_a(CPU* cpu, void* data);
+int inst_cp_b(CPU* cpu, void* data);
+int inst_cp_c(CPU* cpu, void* data);
+int inst_cp_d(CPU* cpu, void* data);
+int inst_cp_e(CPU* cpu, void* data);
+int inst_cp_h(CPU* cpu, void* data);
+int inst_cp_l(CPU* cpu, void* data);
+int inst_cp_ahl(CPU* cpu, void* data);
+int inst_cp_ib(CPU* cpu, void* data);
+
 int inst_cpl(CPU* cpu, void* data);
 int inst_ccf(CPU* cpu, void* data);
 int inst_scf(CPU* cpu, void* data);
 
 int inst_jp_nn(CPU* cpu, void* data);
+
+int inst_jp_fnz_nn(CPU* cpu, void* data);
+int inst_jp_fz_nn(CPU* cpu, void* data);
+int inst_jp_fnc_nn(CPU* cpu, void* data);
+int inst_jp_fc_nn(CPU* cpu, void* data);
+
+int inst_jp_hl(CPU* cpu, void* data);
 
 int inst_push_af(CPU* cpu, void* data);
 int inst_push_bc(CPU* cpu, void* data);
@@ -257,6 +285,30 @@ static const Instruction instruction_set[] = {
     [0x87] = (Instruction){"ADD A,A",    inst_add_a_a,    0},
     [0x80] = (Instruction){"ADD A,B",    inst_add_a_b,    0},
 
+    //subtraction
+
+    [0x97] = (Instruction){"SUB A",    inst_sub_a,    0},
+    [0x90] = (Instruction){"SUB B",    inst_sub_b,    0},
+    [0x91] = (Instruction){"SUB C",    inst_sub_c,    0},
+    [0x92] = (Instruction){"SUB D",    inst_sub_d,    0},
+    [0x93] = (Instruction){"SUB E",    inst_sub_e,    0},
+    [0x94] = (Instruction){"SUB H",    inst_sub_h,    0},
+    [0x95] = (Instruction){"SUB L",    inst_sub_l,    0},
+    [0x96] = (Instruction){"SUB (HL)",    inst_sub_ahl,    0},
+    [0xD6] = (Instruction){"SUB #",    inst_sub_ib,    1},
+
+    //compare
+
+    [0xBF] = (Instruction){"CP A",    inst_cp_a,    0},
+    [0xB8] = (Instruction){"CP B",    inst_cp_b,    0},
+    [0xB9] = (Instruction){"CP C",    inst_cp_c,    0},
+    [0xBA] = (Instruction){"CP D",    inst_cp_d,    0},
+    [0xBB] = (Instruction){"CP E",    inst_cp_e,    0},
+    [0xBC] = (Instruction){"CP H",    inst_cp_h,    0},
+    [0xBD] = (Instruction){"CP L",    inst_cp_l,    0},
+    [0xBE] = (Instruction){"CP (HL)",    inst_cp_ahl,    0},
+    [0xFE] = (Instruction){"CP #",    inst_cp_ib,    1},
+
     [0x30] = (Instruction){"SWAP B",    inst_swap_b,    0},
     [0x31] = (Instruction){"SWAP C",    inst_swap_c,    0},
     [0x32] = (Instruction){"SWAP D",    inst_swap_d,    0},
@@ -267,6 +319,11 @@ static const Instruction instruction_set[] = {
     [0x37] = (Instruction){"SCF",      inst_scf,  0}, 
 
     [0xC3] = (Instruction){"JP nn",      inst_jp_nn,  2}, 
+    [0xC2] = (Instruction){"JP NZ,nn",      inst_jp_fnz_nn,  2}, 
+    [0xCA] = (Instruction){"JP Z,nn",      inst_jp_fz_nn,  2}, 
+    [0xD2] = (Instruction){"JP NC,nn",      inst_jp_fnc_nn,  2}, 
+    [0xDA] = (Instruction){"JP C,nn",      inst_jp_fc_nn,  2}, 
+    [0xE9] = (Instruction){"JP HL", inst_jp_hl, 0},
 
     [0xCD] = (Instruction){"CALL nn",   inst_call_nn,   2},
     [0xC9] = (Instruction){"RET",   inst_ret,   0},

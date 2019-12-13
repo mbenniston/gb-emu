@@ -17,6 +17,7 @@ void cpu_Tick(CPU* cpu)
 {
     //read instruction
     lbyte opcode = Memory_Read_byte(&cpu->memory, cpu->registers.PC++);   
+
     Instruction instruction = instruction_set[opcode];
 
     switch (instruction.numImmediates)

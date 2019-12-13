@@ -30,10 +30,26 @@ int main(int argc, char** argv)
         if(!file) return 1;
 
         int c;
+        int i = 0;
+        int immCount = 0;
         while((c = fgetc(file)) != EOF) {
-            if(instruction_set[c].name != NULL) printf("%s\n", instruction_set[c].name);
-            else printf("Not implemented 0x%X\n", c);
+            byte b = c;
+
+            if(immCount > 0) {
+                printf("0x%X: #0x%X\n", i, b);
+                immCount--;
+            } else {
+                if(instruction_set[b].name != NULL) {
+                    printf("0x%X: 0x%X, %s\n", i, b, instruction_set[b].name);
+                    immCount += instruction_set[b].numImmediates;
+                } 
+            }
+
+            i++;
         }
+
+        for(int i = 0; i < 16; i++) {
+                    }
 
     } else {
         const char* fileName = argv[1];
