@@ -1,9 +1,24 @@
 LD A,#
-1
-LD A,#
 0
-CP A
-JP Z,nn
-7
+LD B,#
+2
+LD C,#
+2
+LD D,#
+2
+LD E,#
+2
+LD H,#
+2
+LD L,#
+2
+ADD A,B
+ADD A,C
+ADD A,D
+ADD A,E
+ADD A,H
+ADD A,L
+JP nn
+E
 0
 STOP

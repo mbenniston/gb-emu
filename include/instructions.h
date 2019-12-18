@@ -112,8 +112,34 @@ int inst_ld_l_ib(CPU* cpu, void* data);
 int inst_ld_ac_a(CPU* cpu, void* data);
 int inst_ld_a_ac(CPU* cpu, void* data);
 
+int inst_adc_a_a(CPU* cpu, void* data);
+int inst_adc_a_b(CPU* cpu, void* data);
+int inst_adc_a_c(CPU* cpu, void* data);
+int inst_adc_a_d(CPU* cpu, void* data);
+int inst_adc_a_e(CPU* cpu, void* data);
+int inst_adc_a_h(CPU* cpu, void* data);
+int inst_adc_a_l(CPU* cpu, void* data);
+int inst_adc_a_ahl(CPU* cpu, void* data);
+int inst_adc_a_ib(CPU* cpu, void* data);
+
+int inst_inc_a(CPU* cpu, void* data);
+int inst_inc_b(CPU* cpu, void* data);
+int inst_inc_c(CPU* cpu, void* data);
+int inst_inc_d(CPU* cpu, void* data);
+int inst_inc_e(CPU* cpu, void* data);
+int inst_inc_h(CPU* cpu, void* data);
+int inst_inc_l(CPU* cpu, void* data);
+int inst_inc_ahl(CPU* cpu, void* data);
+
 int inst_add_a_b(CPU* cpu, void* data);
 int inst_add_a_a(CPU* cpu, void* data);
+int inst_add_a_c(CPU* cpu, void* data);
+int inst_add_a_d(CPU* cpu, void* data);
+int inst_add_a_e(CPU* cpu, void* data);
+int inst_add_a_h(CPU* cpu, void* data);
+int inst_add_a_l(CPU* cpu, void* data);
+int inst_add_a_ahl(CPU* cpu, void* data);
+int inst_add_a_ib(CPU* cpu, void* data);
 
 int inst_sub_a(CPU* cpu, void* data);
 int inst_sub_b(CPU* cpu, void* data);
@@ -282,8 +308,39 @@ static const Instruction instruction_set[] = {
     [0xE2] = (Instruction){"LD (C),A",    inst_ld_ac_a,    0},
     [0xF2] = (Instruction){"LD A,(C)",    inst_ld_a_ac,    0},
 
+    //addition
+
+    //increment 
+    [0x3C] = (Instruction){"INC A",   inst_inc_a,    0},
+    [0x04] = (Instruction){"INC B",   inst_inc_b,    0},
+    [0x0C] = (Instruction){"INC C",   inst_inc_c,    0},
+    [0x14] = (Instruction){"INC D",   inst_inc_d,    0},
+    [0x1C] = (Instruction){"INC E",   inst_inc_e,    0},
+    [0x24] = (Instruction){"INC H",   inst_inc_h,    0},
+    [0x2C] = (Instruction){"INC L",   inst_inc_l,    0},
+    [0x34] = (Instruction){"INC (HL)",   inst_inc_ahl,    0},
+
+    //add with carries
+    [0x8F] = (Instruction){"ADC A,A",   inst_adc_a_a,    0},
+    [0x88] = (Instruction){"ADC A,B",   inst_adc_a_b,    0},
+    [0x89] = (Instruction){"ADC A,C",   inst_adc_a_c,    0},
+    [0x8A] = (Instruction){"ADC A,D",   inst_adc_a_d,    0},
+    [0x8B] = (Instruction){"ADC A,E",   inst_adc_a_e,    0},
+    [0x8C] = (Instruction){"ADC A,H",   inst_adc_a_h,    0},
+    [0x8D] = (Instruction){"ADC A,L",   inst_adc_a_l,    0},
+    [0x8E] = (Instruction){"ADC A,(HL)",   inst_adc_a_ahl,    0},
+    [0xCE] = (Instruction){"ADC A,#",   inst_adc_a_ib,    0},
+
+    //adds
     [0x87] = (Instruction){"ADD A,A",    inst_add_a_a,    0},
     [0x80] = (Instruction){"ADD A,B",    inst_add_a_b,    0},
+    [0x81] = (Instruction){"ADD A,C",    inst_add_a_c,    0},
+    [0x82] = (Instruction){"ADD A,D",    inst_add_a_d,    0},
+    [0x83] = (Instruction){"ADD A,E",    inst_add_a_e,    0},
+    [0x84] = (Instruction){"ADD A,H",    inst_add_a_h,    0},
+    [0x85] = (Instruction){"ADD A,L",    inst_add_a_l,    0},
+    [0x86] = (Instruction){"ADD A,(HL)",    inst_add_a_ahl,    0},
+    [0xC6] = (Instruction){"ADD A,#",    inst_add_a_ib,    0},
 
     //subtraction
 
@@ -297,7 +354,7 @@ static const Instruction instruction_set[] = {
     [0x96] = (Instruction){"SUB (HL)",    inst_sub_ahl,    0},
     [0xD6] = (Instruction){"SUB #",    inst_sub_ib,    1},
 
-    //compare
+    //compare (with A)
 
     [0xBF] = (Instruction){"CP A",    inst_cp_a,    0},
     [0xB8] = (Instruction){"CP B",    inst_cp_b,    0},
