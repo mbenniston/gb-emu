@@ -112,6 +112,18 @@ int inst_ld_l_ib(CPU* cpu, void* data);
 int inst_ld_ac_a(CPU* cpu, void* data);
 int inst_ld_a_ac(CPU* cpu, void* data);
 
+int inst_ld_bc_il(CPU* cpu, void* data);
+int inst_ld_de_il(CPU* cpu, void* data);
+int inst_ld_hl_il(CPU* cpu, void* data);
+int inst_ld_sp_il(CPU* cpu, void* data);
+
+int inst_ldd_ahl_a(CPU* cpu, void* data);
+int inst_ldd_a_ahl(CPU* cpu, void* data);
+
+int inst_ldh_aib_a(CPU* cpu, void* data);
+int inst_ldh_a_aib (CPU* cpu, void* data);
+
+
 int inst_adc_a_a(CPU* cpu, void* data);
 int inst_adc_a_b(CPU* cpu, void* data);
 int inst_adc_a_c(CPU* cpu, void* data);
@@ -130,6 +142,15 @@ int inst_inc_e(CPU* cpu, void* data);
 int inst_inc_h(CPU* cpu, void* data);
 int inst_inc_l(CPU* cpu, void* data);
 int inst_inc_ahl(CPU* cpu, void* data);
+
+int inst_dec_a(CPU* cpu, void* data);
+int inst_dec_b(CPU* cpu, void* data);
+int inst_dec_c(CPU* cpu, void* data);
+int inst_dec_d(CPU* cpu, void* data);
+int inst_dec_e(CPU* cpu, void* data);
+int inst_dec_h(CPU* cpu, void* data);
+int inst_dec_l(CPU* cpu, void* data);
+int inst_dec_ahl(CPU* cpu, void* data);
 
 int inst_add_a_b(CPU* cpu, void* data);
 int inst_add_a_a(CPU* cpu, void* data);
@@ -175,6 +196,8 @@ int inst_jp_fc_nn(CPU* cpu, void* data);
 
 int inst_jp_hl(CPU* cpu, void* data);
 
+int inst_jr_fnz_ib(CPU* cpu, void* data);
+
 int inst_push_af(CPU* cpu, void* data);
 int inst_push_bc(CPU* cpu, void* data);
 int inst_push_de(CPU* cpu, void* data);
@@ -217,6 +240,8 @@ int inst_xor_ahl(CPU* cpu, void* data);
 
 int inst_call_nn(CPU* cpu, void* data);
 int inst_ret(CPU* cpu, void* data);
+
+int inst_di(CPU* cpu, void* data);
 
 
 static const Instruction instruction_set[] = {
@@ -308,6 +333,22 @@ static const Instruction instruction_set[] = {
     [0xE2] = (Instruction){"LD (C),A",    inst_ld_ac_a,    0},
     [0xF2] = (Instruction){"LD A,(C)",    inst_ld_a_ac,    0},
 
+    //16 bit immediate loads
+    [0x01] = (Instruction){"LD BC,#",    inst_ld_bc_il,    2},
+    [0x11] = (Instruction){"LD DE,#",    inst_ld_de_il,    2},
+    [0x21] = (Instruction){"LD HL,#",    inst_ld_hl_il,    2},
+    [0x31] = (Instruction){"LD SP,#",    inst_ld_sp_il,    2},
+
+    //the same as LD (HL),A; DEC HL
+    [0x32] = (Instruction){"LDD (HL),A",    inst_ldd_ahl_a,    0},
+    //the same as LD A,(HL); DEC HL
+    [0x32] = (Instruction){"LDD A,(HL)",    inst_ldd_a_ahl,    0},
+
+    //relational loads
+    [0xE0] = (Instruction){"LDH (#),A",    inst_ldh_aib_a,    1},
+    [0xF0] = (Instruction){"LDH A,(#)",    inst_ldh_a_aib,    1},
+
+
     //addition
 
     //increment 
@@ -344,6 +385,17 @@ static const Instruction instruction_set[] = {
 
     //subtraction
 
+    //decrement
+    [0x3D] = (Instruction){"DEC A",   inst_dec_a,    0},
+    [0x05] = (Instruction){"DEC B",   inst_dec_b,    0},
+    [0x0D] = (Instruction){"DEC C",   inst_dec_c,    0},
+    [0x15] = (Instruction){"DEC D",   inst_dec_d,    0},
+    [0x1D] = (Instruction){"DEC E",   inst_dec_e,    0},
+    [0x25] = (Instruction){"DEC H",   inst_dec_h,    0},
+    [0x2D] = (Instruction){"DEC L",   inst_dec_l,    0},
+    [0x35] = (Instruction){"DEC (HL)",   inst_dec_ahl,    0},
+
+
     [0x97] = (Instruction){"SUB A",    inst_sub_a,    0},
     [0x90] = (Instruction){"SUB B",    inst_sub_b,    0},
     [0x91] = (Instruction){"SUB C",    inst_sub_c,    0},
@@ -366,9 +418,9 @@ static const Instruction instruction_set[] = {
     [0xBE] = (Instruction){"CP (HL)",    inst_cp_ahl,    0},
     [0xFE] = (Instruction){"CP #",    inst_cp_ib,    1},
 
-    [0x30] = (Instruction){"SWAP B",    inst_swap_b,    0},
-    [0x31] = (Instruction){"SWAP C",    inst_swap_c,    0},
-    [0x32] = (Instruction){"SWAP D",    inst_swap_d,    0},
+    // [0x30] = (Instruction){"SWAP B",    inst_swap_b,    0},
+    // [0x31] = (Instruction){"SWAP C",    inst_swap_c,    0},
+    // [0x32] = (Instruction){"SWAP D",    inst_swap_d,    0},
     
     [0x10] = (Instruction){"STOP",      inst_stop,  0}, //might be extended 0x10 0x00
     [0x2F] = (Instruction){"CPL",      inst_cpl,  0}, 
@@ -381,6 +433,9 @@ static const Instruction instruction_set[] = {
     [0xD2] = (Instruction){"JP NC,nn",      inst_jp_fnc_nn,  2}, 
     [0xDA] = (Instruction){"JP C,nn",      inst_jp_fc_nn,  2}, 
     [0xE9] = (Instruction){"JP HL", inst_jp_hl, 0},
+
+    [0x20] = (Instruction){"JR NZ,#", inst_jr_fnz_ib, 1},
+
 
     [0xCD] = (Instruction){"CALL nn",   inst_call_nn,   2},
     [0xC9] = (Instruction){"RET",   inst_ret,   0},
@@ -442,7 +497,10 @@ static const Instruction instruction_set[] = {
     [0x0B] = (Instruction){"DEC BC",    inst_dec_bc,    0},
     [0x1B] = (Instruction){"DEC DE",    inst_dec_de,    0},
     [0x2B] = (Instruction){"DEC HL",    inst_dec_hl,    0},
-    [0x3B] = (Instruction){"DEC SP",    inst_dec_sp,    0}    
+    [0x3B] = (Instruction){"DEC SP",    inst_dec_sp,    0},
+
+    [0xF3] = (Instruction){"DI",    inst_di,    0}    
+
 };  
 
 

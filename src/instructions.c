@@ -312,6 +312,56 @@ byte sub_bytes(byte l, byte r, byte* flags)
     return (byte)out;
 }
 
+int inst_dec_a(CPU* cpu, void* data) { 
+    int oldCarry = flags_IsC(cpu->registers.F);
+    cpu->registers.A = sub_bytes(cpu->registers.A, 1, &cpu->registers.F);
+    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);
+    return 4;
+} 
+
+int inst_dec_b(CPU* cpu, void* data) { 
+    int oldCarry = flags_IsC(cpu->registers.F);
+    cpu->registers.B = sub_bytes(cpu->registers.B, 1, &cpu->registers.F);
+    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);
+    return 4;
+} 
+int inst_dec_c(CPU* cpu, void* data) { 
+    int oldCarry = flags_IsC(cpu->registers.F);
+    cpu->registers.C = sub_bytes(cpu->registers.C, 1, &cpu->registers.F);
+    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);
+    return 4;
+} 
+int inst_dec_d(CPU* cpu, void* data) { 
+    int oldCarry = flags_IsC(cpu->registers.F);
+    cpu->registers.D = sub_bytes(cpu->registers.D, 1, &cpu->registers.F);
+    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);    
+    return 4;
+} 
+int inst_dec_e(CPU* cpu, void* data) { 
+    int oldCarry = flags_IsC(cpu->registers.F);
+    cpu->registers.E = sub_bytes(cpu->registers.E, 1, &cpu->registers.F);
+    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);    
+    return 4;
+} 
+int inst_dec_h(CPU* cpu, void* data) { 
+     int oldCarry = flags_IsC(cpu->registers.F);
+    cpu->registers.H = sub_bytes(cpu->registers.H, 1, &cpu->registers.F);
+    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);   
+    return 4;
+} 
+int inst_dec_l(CPU* cpu, void* data) { 
+    int oldCarry = flags_IsC(cpu->registers.F);
+    cpu->registers.L = sub_bytes(cpu->registers.L, 1, &cpu->registers.F);
+    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);    
+    return 4;
+} 
+int inst_dec_ahl(CPU* cpu, void* data) { 
+    int oldCarry = flags_IsC(cpu->registers.F);
+    Memory_Write_byte(&cpu->memory, cpu->registers.HL, sub_bytes(Memory_Read_byte(&cpu->memory, cpu->registers.HL), 1, &cpu->registers.F));
+    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);   
+    return 12;
+} 
+
 int inst_sub_a(CPU* cpu, void* data) { cpu->registers.A = sub_bytes(cpu->registers.A, cpu->registers.A, &cpu->registers.F); return 4; }
 int inst_sub_b(CPU* cpu, void* data) { cpu->registers.A = sub_bytes(cpu->registers.A, cpu->registers.B, &cpu->registers.F); return 4; }
 int inst_sub_c(CPU* cpu, void* data) { cpu->registers.A = sub_bytes(cpu->registers.A, cpu->registers.C, &cpu->registers.F); return 4; }
@@ -338,6 +388,18 @@ int inst_ld_d_ib(CPU* cpu, void* data) {cpu->registers.D = *(byte*)data; return 
 int inst_ld_e_ib(CPU* cpu, void* data) {cpu->registers.E = *(byte*)data; return 8; } 
 int inst_ld_h_ib(CPU* cpu, void* data) {cpu->registers.H = *(byte*)data; return 8; } 
 int inst_ld_l_ib(CPU* cpu, void* data) {cpu->registers.L = *(byte*)data; return 8; } 
+
+int inst_ld_bc_il(CPU* cpu, void* data) {cpu->registers.BC = *(lbyte*)data; return 12; } 
+int inst_ld_de_il(CPU* cpu, void* data) {cpu->registers.DE = *(lbyte*)data; return 12; } 
+int inst_ld_hl_il(CPU* cpu, void* data) {cpu->registers.HL = *(lbyte*)data; return 12; } 
+int inst_ld_sp_il(CPU* cpu, void* data) {cpu->registers.SP = *(lbyte*)data; return 12; } 
+
+int inst_ldd_ahl_a(CPU* cpu, void* data) { inst_ld_ahl_a(cpu, NULL); inst_dec_hl(cpu, NULL); return 8; }
+int inst_ldd_a_ahl(CPU* cpu, void* data) { inst_ld_a_ahl(cpu, NULL); inst_dec_hl(cpu, NULL); return 8; }
+
+int inst_ldh_aib_a(CPU* cpu, void* data){ Memory_Write_byte(&cpu->memory, 0xFF00 + *(byte*)data, cpu->registers.A); return 12;}
+int inst_ldh_a_aib(CPU* cpu, void* data){ cpu->registers.A = Memory_Read_byte(&cpu->memory, 0xFF00 + *(byte*)data); return 12;}
+
 
 int inst_nop(CPU* cpu, void* data)
 {
@@ -421,6 +483,16 @@ int inst_jp_hl(CPU* cpu, void* data)
     cpu->registers.PC = cpu->registers.HL;
     return 4;
 }
+
+int inst_jr_fnz_ib(CPU* cpu, void* data)
+{
+    if(!flags_IsZ(cpu->registers.F)){
+        sbyte signedByte = *(byte*)data;
+        cpu->registers.PC += signedByte;
+    }
+    return 8;
+}
+
 
 void stack_push(CPU* cpu, lbyte data)
 {
@@ -511,3 +583,8 @@ int inst_xor_ib(CPU* cpu, void* data) { xor_a(cpu, *(byte*)data); return 8; }
 
 int inst_call_nn(CPU* cpu, void* data) { stack_push(cpu, cpu->registers.PC); cpu->registers.PC = *(lbyte*)data; return 12;}
 int inst_ret(CPU* cpu, void* data) { cpu->registers.PC = stack_pop(cpu); return 8;}
+
+int inst_di(CPU* cpu, void* data) {
+    //dummy TODO
+    return 4;
+}

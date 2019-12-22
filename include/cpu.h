@@ -6,6 +6,7 @@
 typedef struct {
     RegisterBank registers;
     Memory memory;
+    int totalCycles;
 } CPU;
 
 void cpu_Initialise(CPU* cpu);

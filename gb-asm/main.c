@@ -42,7 +42,9 @@ int main(int argc, char** argv)
                 if(instruction_set[b].name != NULL) {
                     printf("0x%X: 0x%X, %s\n", i, b, instruction_set[b].name);
                     immCount += instruction_set[b].numImmediates;
-                } 
+                } else {
+                    printf("0x%X: 0x%X, %s\n", i, b, "Unknown instruction");
+                }
             }
 
             i++;

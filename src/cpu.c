@@ -2,6 +2,7 @@
 #include "../include/instructions.h"
 #include <string.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 bool cpu_Stopped = false;
 
@@ -11,6 +12,7 @@ void cpu_Initialise(CPU* cpu)
 {
     memset(&cpu->registers, 0, sizeof(RegisterBank));
     cpu->registers.SP = 0xFFFE;
+    cpu->totalCycles = 0;
 }
 
 void cpu_Tick(CPU* cpu) 
@@ -20,12 +22,17 @@ void cpu_Tick(CPU* cpu)
 
     Instruction instruction = instruction_set[opcode];
 
+    if(!instruction.handler){
+        printf("Instruction 0x%X not implemented: %d cycles\n", opcode, cpu->totalCycles);
+        return;
+    }
+
     switch (instruction.numImmediates)
     {
     case 1:
         {
             byte value = Memory_Read_byte(&cpu->memory, cpu->registers.PC++);
-            instruction.handler(cpu, &value);
+            cpu->totalCycles += instruction.handler(cpu, &value);
         }
         break;
     case 2:
@@ -34,12 +41,12 @@ void cpu_Tick(CPU* cpu)
             byte value1 = Memory_Read_byte(&cpu->memory, cpu->registers.PC++);
             byte value2 = Memory_Read_byte(&cpu->memory, cpu->registers.PC++);
             lbyte value = (value2 << 8) | value1;
-            instruction.handler(cpu, &value);
+            cpu->totalCycles += instruction.handler(cpu, &value);
         }
         break;
     
     default:
-        instruction.handler(cpu, NULL);
+        cpu->totalCycles += instruction.handler(cpu, NULL);
         break;
     }
 
