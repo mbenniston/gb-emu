@@ -4,11 +4,11 @@
 #include "types.h"
 #include "cpu.h"
 
-typedef struct 
+typedef struct
 {
     const char* name;
     int(*handler)(CPU*, void*);
-    int numImmediates; //defaults to 0 
+    int numImmediates; //defaults to 0
     //function pointer to handler
 } Instruction;
 
@@ -243,6 +243,14 @@ int inst_ret(CPU* cpu, void* data);
 
 int inst_di(CPU* cpu, void* data);
 
+int inst_rst_00(CPU* cpu, void* data);
+int inst_rst_08(CPU* cpu, void* data);
+int inst_rst_10(CPU* cpu, void* data);
+int inst_rst_18(CPU* cpu, void* data);
+int inst_rst_20(CPU* cpu, void* data);
+int inst_rst_28(CPU* cpu, void* data);
+int inst_rst_30(CPU* cpu, void* data);
+int inst_rst_38(CPU* cpu, void* data);
 
 static const Instruction instruction_set[] = {
     [0x00] = (Instruction){"NOP",       inst_nop,   0},
@@ -306,7 +314,7 @@ static const Instruction instruction_set[] = {
     [0x1E] = (Instruction){"LD E,#",    inst_ld_e_ib,    1},
     [0x26] = (Instruction){"LD H,#",    inst_ld_h_ib,    1},
     [0x2E] = (Instruction){"LD L,#",    inst_ld_l_ib,    1},
-    
+
     [0x0A] = (Instruction){"LD A,(BC)",    inst_ld_a_abc,    0},
     [0x1A] = (Instruction){"LD A,(DE)",    inst_ld_a_ade,    0},
     [0x7E] = (Instruction){"LD A,(HL)",    inst_ld_a_ahl,    0},
@@ -351,7 +359,7 @@ static const Instruction instruction_set[] = {
 
     //addition
 
-    //increment 
+    //increment
     [0x3C] = (Instruction){"INC A",   inst_inc_a,    0},
     [0x04] = (Instruction){"INC B",   inst_inc_b,    0},
     [0x0C] = (Instruction){"INC C",   inst_inc_c,    0},
@@ -421,17 +429,17 @@ static const Instruction instruction_set[] = {
     // [0x30] = (Instruction){"SWAP B",    inst_swap_b,    0},
     // [0x31] = (Instruction){"SWAP C",    inst_swap_c,    0},
     // [0x32] = (Instruction){"SWAP D",    inst_swap_d,    0},
-    
-    [0x10] = (Instruction){"STOP",      inst_stop,  0}, //might be extended 0x10 0x00
-    [0x2F] = (Instruction){"CPL",      inst_cpl,  0}, 
-    [0x3F] = (Instruction){"CCF",      inst_ccf,  0}, 
-    [0x37] = (Instruction){"SCF",      inst_scf,  0}, 
 
-    [0xC3] = (Instruction){"JP nn",      inst_jp_nn,  2}, 
-    [0xC2] = (Instruction){"JP NZ,nn",      inst_jp_fnz_nn,  2}, 
-    [0xCA] = (Instruction){"JP Z,nn",      inst_jp_fz_nn,  2}, 
-    [0xD2] = (Instruction){"JP NC,nn",      inst_jp_fnc_nn,  2}, 
-    [0xDA] = (Instruction){"JP C,nn",      inst_jp_fc_nn,  2}, 
+    [0x10] = (Instruction){"STOP",      inst_stop,  0}, //might be extended 0x10 0x00
+    [0x2F] = (Instruction){"CPL",      inst_cpl,  0},
+    [0x3F] = (Instruction){"CCF",      inst_ccf,  0},
+    [0x37] = (Instruction){"SCF",      inst_scf,  0},
+
+    [0xC3] = (Instruction){"JP nn",      inst_jp_nn,  2},
+    [0xC2] = (Instruction){"JP NZ,nn",      inst_jp_fnz_nn,  2},
+    [0xCA] = (Instruction){"JP Z,nn",      inst_jp_fz_nn,  2},
+    [0xD2] = (Instruction){"JP NC,nn",      inst_jp_fnc_nn,  2},
+    [0xDA] = (Instruction){"JP C,nn",      inst_jp_fc_nn,  2},
     [0xE9] = (Instruction){"JP HL", inst_jp_hl, 0},
 
     [0x20] = (Instruction){"JR NZ,#", inst_jr_fnz_ib, 1},
@@ -440,17 +448,17 @@ static const Instruction instruction_set[] = {
     [0xCD] = (Instruction){"CALL nn",   inst_call_nn,   2},
     [0xC9] = (Instruction){"RET",   inst_ret,   0},
 
-    //push    
-    [0xF5] = (Instruction){"PUSH AF",      inst_push_af,  0}, 
-    [0xC5] = (Instruction){"PUSH BC",      inst_push_bc,  0}, 
-    [0xD5] = (Instruction){"PUSH DE",      inst_push_de,  0}, 
-    [0xE5] = (Instruction){"PUSH HL",      inst_push_hl,  0}, 
+    //push
+    [0xF5] = (Instruction){"PUSH AF",      inst_push_af,  0},
+    [0xC5] = (Instruction){"PUSH BC",      inst_push_bc,  0},
+    [0xD5] = (Instruction){"PUSH DE",      inst_push_de,  0},
+    [0xE5] = (Instruction){"PUSH HL",      inst_push_hl,  0},
 
     //pop
-    [0xF1] = (Instruction){"POP AF",      inst_pop_af,  0}, 
-    [0xC1] = (Instruction){"POP BC",      inst_pop_bc,  0}, 
-    [0xD1] = (Instruction){"POP DE",      inst_pop_de,  0}, 
-    [0xE1] = (Instruction){"POP HL",      inst_pop_hl,  0}, 
+    [0xF1] = (Instruction){"POP AF",      inst_pop_af,  0},
+    [0xC1] = (Instruction){"POP BC",      inst_pop_bc,  0},
+    [0xD1] = (Instruction){"POP DE",      inst_pop_de,  0},
+    [0xE1] = (Instruction){"POP HL",      inst_pop_hl,  0},
 
     //AND
     [0xA7] = (Instruction){"AND A", inst_and_a, 0},
@@ -499,9 +507,18 @@ static const Instruction instruction_set[] = {
     [0x2B] = (Instruction){"DEC HL",    inst_dec_hl,    0},
     [0x3B] = (Instruction){"DEC SP",    inst_dec_sp,    0},
 
-    [0xF3] = (Instruction){"DI",    inst_di,    0}    
+    [0xF3] = (Instruction){"DI",    inst_di,    0},
 
-};  
+    //RST
+    [0xC7] = (Instruction){"RST 00", inst_rst_00, 0},
+    [0xCF] = (Instruction){"RST 08", inst_rst_08, 0},
+    [0xD7] = (Instruction){"RST 10", inst_rst_10, 0},
+    [0xDF] = (Instruction){"RST 18", inst_rst_18, 0},
+    [0xE7] = (Instruction){"RST 20", inst_rst_20, 0},
+    [0xEF] = (Instruction){"RST 28", inst_rst_28, 0},
+    [0xF7] = (Instruction){"RST 30", inst_rst_30, 0},
+    [0xFF] = (Instruction){"RST 38", inst_rst_38, 0}
+};
 
 
 #endif

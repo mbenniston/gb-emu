@@ -6,11 +6,11 @@
 
 extern bool cpu_Stopped;
 
-const Instruction* const Instruction_GetFromName(const char* name) 
+const Instruction* const Instruction_GetFromName(const char* name)
 {
     for(int i = 0; i < sizeof(instruction_set) / sizeof(Instruction); i++) {
-        if(instruction_set[i].name != NULL && strncmp(instruction_set[i].name, name, strlen(instruction_set[i].name)) == 0) { 
-            return &instruction_set[i]; 
+        if(instruction_set[i].name != NULL && strncmp(instruction_set[i].name, name, strlen(instruction_set[i].name)) == 0) {
+            return &instruction_set[i];
         }
     }
 
@@ -18,7 +18,7 @@ const Instruction* const Instruction_GetFromName(const char* name)
 }
 
 
-void swap_r(CPU* cpu, byte* b) 
+void swap_r(CPU* cpu, byte* b)
 {
     byte htemp = *b & 0xF0;
     *b <<= 4;
@@ -29,17 +29,17 @@ void swap_r(CPU* cpu, byte* b)
     if(*b == 0) flags_SetZ(&cpu->registers.F);
 }
 
-void inc_rl(lbyte* b) 
+void inc_rl(lbyte* b)
 {
     (*b)++;
     //no flags affected
-} 
+}
 
-void dec_rl(lbyte* b) 
+void dec_rl(lbyte* b)
 {
     (*b)--;
     //no flags affected
-} 
+}
 
 int inst_swap_b(CPU* cpu, void* data) { swap_r(cpu, &cpu->registers.B); return 4; }
 int inst_swap_c(CPU* cpu, void* data) { swap_r(cpu, &cpu->registers.C); return 4; }
@@ -118,17 +118,17 @@ int inst_ld_a_ade(CPU* cpu, void* data) { cpu->registers.A = Memory_Read_byte(&c
 int inst_ld_a_ann(CPU* cpu, void* data) { cpu->registers.A = Memory_Read_byte(&cpu->memory, *(lbyte*)data); return 16; }
 
 
-int inst_ld_abc_a(CPU* cpu, void* data) { Memory_Write_byte(&cpu->memory, cpu->registers.BC, cpu->registers.A); return 8; } 
-int inst_ld_ade_a(CPU* cpu, void* data) { Memory_Write_byte(&cpu->memory, cpu->registers.DE, cpu->registers.A); return 8; } 
-int inst_ld_ann_a(CPU* cpu, void* data) { Memory_Write_byte(&cpu->memory, *(lbyte*)data, cpu->registers.A); return 16; } 
-int inst_ld_ahl_a(CPU* cpu, void* data) { Memory_Write_byte(&cpu->memory, cpu->registers.HL, cpu->registers.A); return 8;} 
-int inst_ld_ahl_b(CPU* cpu, void* data) { Memory_Write_byte(&cpu->memory, cpu->registers.HL, cpu->registers.B); return 8;} 
-int inst_ld_ahl_c(CPU* cpu, void* data) { Memory_Write_byte(&cpu->memory, cpu->registers.HL, cpu->registers.C); return 8;} 
-int inst_ld_ahl_d(CPU* cpu, void* data) { Memory_Write_byte(&cpu->memory, cpu->registers.HL, cpu->registers.D); return 8;} 
-int inst_ld_ahl_e(CPU* cpu, void* data) { Memory_Write_byte(&cpu->memory, cpu->registers.HL, cpu->registers.E); return 8;} 
-int inst_ld_ahl_h(CPU* cpu, void* data) { Memory_Write_byte(&cpu->memory, cpu->registers.HL, cpu->registers.H); return 8;} 
-int inst_ld_ahl_l(CPU* cpu, void* data) { Memory_Write_byte(&cpu->memory, cpu->registers.HL, cpu->registers.L); return 8;} 
-int inst_ld_ahl_ib(CPU* cpu, void* data) { Memory_Write_byte(&cpu->memory, cpu->registers.HL, *(byte*)data); return 12;} 
+int inst_ld_abc_a(CPU* cpu, void* data) { Memory_Write_byte(&cpu->memory, cpu->registers.BC, cpu->registers.A); return 8; }
+int inst_ld_ade_a(CPU* cpu, void* data) { Memory_Write_byte(&cpu->memory, cpu->registers.DE, cpu->registers.A); return 8; }
+int inst_ld_ann_a(CPU* cpu, void* data) { Memory_Write_byte(&cpu->memory, *(lbyte*)data, cpu->registers.A); return 16; }
+int inst_ld_ahl_a(CPU* cpu, void* data) { Memory_Write_byte(&cpu->memory, cpu->registers.HL, cpu->registers.A); return 8;}
+int inst_ld_ahl_b(CPU* cpu, void* data) { Memory_Write_byte(&cpu->memory, cpu->registers.HL, cpu->registers.B); return 8;}
+int inst_ld_ahl_c(CPU* cpu, void* data) { Memory_Write_byte(&cpu->memory, cpu->registers.HL, cpu->registers.C); return 8;}
+int inst_ld_ahl_d(CPU* cpu, void* data) { Memory_Write_byte(&cpu->memory, cpu->registers.HL, cpu->registers.D); return 8;}
+int inst_ld_ahl_e(CPU* cpu, void* data) { Memory_Write_byte(&cpu->memory, cpu->registers.HL, cpu->registers.E); return 8;}
+int inst_ld_ahl_h(CPU* cpu, void* data) { Memory_Write_byte(&cpu->memory, cpu->registers.HL, cpu->registers.H); return 8;}
+int inst_ld_ahl_l(CPU* cpu, void* data) { Memory_Write_byte(&cpu->memory, cpu->registers.HL, cpu->registers.L); return 8;}
+int inst_ld_ahl_ib(CPU* cpu, void* data) { Memory_Write_byte(&cpu->memory, cpu->registers.HL, *(byte*)data); return 12;}
 
 int inst_ld_ac_a(CPU* cpu, void* data) { Memory_Write_byte(&cpu->memory, cpu->registers.C + 0xFF00, cpu->registers.A); return 8; }
 int inst_ld_a_ac(CPU* cpu, void* data) { cpu->registers.A = Memory_Read_byte(&cpu->memory, cpu->registers.C + 0xFF00); return 8; }
@@ -151,13 +151,13 @@ byte add_bytes(byte l, byte r, byte* flags)
     return out;
 }
 
-int inst_add_a_a(CPU* cpu, void* data) 
+int inst_add_a_a(CPU* cpu, void* data)
 {
     cpu->registers.A = add_bytes(cpu->registers.A, cpu->registers.A, &cpu->registers.F);
     return 4;
 }
 
-int inst_add_a_b(CPU* cpu, void* data) 
+int inst_add_a_b(CPU* cpu, void* data)
 {
     cpu->registers.A = add_bytes(cpu->registers.A, cpu->registers.B, &cpu->registers.F);
     return 4;
@@ -198,108 +198,108 @@ int inst_add_a_ib(CPU* cpu, void* data) {
     return 8;
 }
 
-int inst_adc_a_a(CPU* cpu, void* data) 
+int inst_adc_a_a(CPU* cpu, void* data)
 {
     cpu->registers.A = add_bytes(cpu->registers.A, cpu->registers.A + (flags_IsC(cpu->registers.F) ? 1 : 0) , &cpu->registers.F);
     return 4;
 }
 
-int inst_adc_a_b(CPU* cpu, void* data) 
+int inst_adc_a_b(CPU* cpu, void* data)
 {
     cpu->registers.A = add_bytes(cpu->registers.A, cpu->registers.B + (flags_IsC(cpu->registers.F) ? 1 : 0) , &cpu->registers.F);
     return 4;
 }
 
-int inst_adc_a_c(CPU* cpu, void* data) 
+int inst_adc_a_c(CPU* cpu, void* data)
 {
     cpu->registers.A = add_bytes(cpu->registers.A, cpu->registers.C + (flags_IsC(cpu->registers.F) ? 1 : 0) , &cpu->registers.F);
     return 4;
 }
 
-int inst_adc_a_d(CPU* cpu, void* data) 
+int inst_adc_a_d(CPU* cpu, void* data)
 {
     cpu->registers.A = add_bytes(cpu->registers.A, cpu->registers.D + (flags_IsC(cpu->registers.F) ? 1 : 0) , &cpu->registers.F);
     return 4;
 }
 
-int inst_adc_a_e(CPU* cpu, void* data) 
+int inst_adc_a_e(CPU* cpu, void* data)
 {
     cpu->registers.A = add_bytes(cpu->registers.A, cpu->registers.E + (flags_IsC(cpu->registers.F) ? 1 : 0) , &cpu->registers.F);
     return 4;
 }
 
-int inst_adc_a_h(CPU* cpu, void* data) 
+int inst_adc_a_h(CPU* cpu, void* data)
 {
     cpu->registers.A = add_bytes(cpu->registers.A, cpu->registers.H + (flags_IsC(cpu->registers.F) ? 1 : 0) , &cpu->registers.F);
     return 4;
 }
 
-int inst_adc_a_l(CPU* cpu, void* data) 
+int inst_adc_a_l(CPU* cpu, void* data)
 {
     cpu->registers.A = add_bytes(cpu->registers.A, cpu->registers.L + (flags_IsC(cpu->registers.F) ? 1 : 0) , &cpu->registers.F);
     return 4;
 }
 
-int inst_adc_a_ahl(CPU* cpu, void* data) 
+int inst_adc_a_ahl(CPU* cpu, void* data)
 {
     cpu->registers.A = add_bytes(cpu->registers.A, Memory_Read_byte(&cpu->memory, cpu->registers.HL) + (flags_IsC(cpu->registers.F) ? 1 : 0) , &cpu->registers.F);
     return 8;
 }
 
-int inst_adc_a_ib(CPU* cpu, void* data) 
+int inst_adc_a_ib(CPU* cpu, void* data)
 {
     cpu->registers.A = add_bytes(cpu->registers.A, *((byte*)data) + (flags_IsC(cpu->registers.F) ? 1 : 0) , &cpu->registers.F);
     return 8;
 }
 
-int inst_inc_a(CPU* cpu, void* data) { 
+int inst_inc_a(CPU* cpu, void* data) {
     int oldCarry = flags_IsC(cpu->registers.F);
     cpu->registers.A = add_bytes(cpu->registers.A, 1, &cpu->registers.F);
     if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);
     return 4;
-} 
-int inst_inc_b(CPU* cpu, void* data) { 
+}
+int inst_inc_b(CPU* cpu, void* data) {
     int oldCarry = flags_IsC(cpu->registers.F);
     cpu->registers.B = add_bytes(cpu->registers.B, 1, &cpu->registers.F);
     if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);
     return 4;
-} 
-int inst_inc_c(CPU* cpu, void* data) { 
+}
+int inst_inc_c(CPU* cpu, void* data) {
     int oldCarry = flags_IsC(cpu->registers.F);
     cpu->registers.C = add_bytes(cpu->registers.C, 1, &cpu->registers.F);
     if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);
     return 4;
-} 
-int inst_inc_d(CPU* cpu, void* data) { 
+}
+int inst_inc_d(CPU* cpu, void* data) {
     int oldCarry = flags_IsC(cpu->registers.F);
     cpu->registers.D = add_bytes(cpu->registers.D, 1, &cpu->registers.F);
-    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);    
+    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);
     return 4;
-} 
-int inst_inc_e(CPU* cpu, void* data) { 
+}
+int inst_inc_e(CPU* cpu, void* data) {
     int oldCarry = flags_IsC(cpu->registers.F);
     cpu->registers.E = add_bytes(cpu->registers.E, 1, &cpu->registers.F);
-    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);    
+    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);
     return 4;
-} 
-int inst_inc_h(CPU* cpu, void* data) { 
+}
+int inst_inc_h(CPU* cpu, void* data) {
      int oldCarry = flags_IsC(cpu->registers.F);
     cpu->registers.H = add_bytes(cpu->registers.H, 1, &cpu->registers.F);
-    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);   
+    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);
     return 4;
-} 
-int inst_inc_l(CPU* cpu, void* data) { 
+}
+int inst_inc_l(CPU* cpu, void* data) {
     int oldCarry = flags_IsC(cpu->registers.F);
     cpu->registers.L = add_bytes(cpu->registers.L, 1, &cpu->registers.F);
-    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);    
+    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);
     return 4;
-} 
-int inst_inc_ahl(CPU* cpu, void* data) { 
+}
+int inst_inc_ahl(CPU* cpu, void* data) {
     int oldCarry = flags_IsC(cpu->registers.F);
     Memory_Write_byte(&cpu->memory, cpu->registers.HL, add_bytes(Memory_Read_byte(&cpu->memory, cpu->registers.HL), 1, &cpu->registers.F));
-    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);   
+    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);
     return 12;
-} 
+}
 
 byte sub_bytes(byte l, byte r, byte* flags)
 {
@@ -312,55 +312,55 @@ byte sub_bytes(byte l, byte r, byte* flags)
     return (byte)out;
 }
 
-int inst_dec_a(CPU* cpu, void* data) { 
+int inst_dec_a(CPU* cpu, void* data) {
     int oldCarry = flags_IsC(cpu->registers.F);
     cpu->registers.A = sub_bytes(cpu->registers.A, 1, &cpu->registers.F);
     if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);
     return 4;
-} 
+}
 
-int inst_dec_b(CPU* cpu, void* data) { 
+int inst_dec_b(CPU* cpu, void* data) {
     int oldCarry = flags_IsC(cpu->registers.F);
     cpu->registers.B = sub_bytes(cpu->registers.B, 1, &cpu->registers.F);
     if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);
     return 4;
-} 
-int inst_dec_c(CPU* cpu, void* data) { 
+}
+int inst_dec_c(CPU* cpu, void* data) {
     int oldCarry = flags_IsC(cpu->registers.F);
     cpu->registers.C = sub_bytes(cpu->registers.C, 1, &cpu->registers.F);
     if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);
     return 4;
-} 
-int inst_dec_d(CPU* cpu, void* data) { 
+}
+int inst_dec_d(CPU* cpu, void* data) {
     int oldCarry = flags_IsC(cpu->registers.F);
     cpu->registers.D = sub_bytes(cpu->registers.D, 1, &cpu->registers.F);
-    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);    
+    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);
     return 4;
-} 
-int inst_dec_e(CPU* cpu, void* data) { 
+}
+int inst_dec_e(CPU* cpu, void* data) {
     int oldCarry = flags_IsC(cpu->registers.F);
     cpu->registers.E = sub_bytes(cpu->registers.E, 1, &cpu->registers.F);
-    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);    
+    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);
     return 4;
-} 
-int inst_dec_h(CPU* cpu, void* data) { 
+}
+int inst_dec_h(CPU* cpu, void* data) {
      int oldCarry = flags_IsC(cpu->registers.F);
     cpu->registers.H = sub_bytes(cpu->registers.H, 1, &cpu->registers.F);
-    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);   
+    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);
     return 4;
-} 
-int inst_dec_l(CPU* cpu, void* data) { 
+}
+int inst_dec_l(CPU* cpu, void* data) {
     int oldCarry = flags_IsC(cpu->registers.F);
     cpu->registers.L = sub_bytes(cpu->registers.L, 1, &cpu->registers.F);
-    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);    
+    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);
     return 4;
-} 
-int inst_dec_ahl(CPU* cpu, void* data) { 
+}
+int inst_dec_ahl(CPU* cpu, void* data) {
     int oldCarry = flags_IsC(cpu->registers.F);
     Memory_Write_byte(&cpu->memory, cpu->registers.HL, sub_bytes(Memory_Read_byte(&cpu->memory, cpu->registers.HL), 1, &cpu->registers.F));
-    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);   
+    if(oldCarry) flags_SetC(&cpu->registers.F); else flags_ResetC(&cpu->registers.F);
     return 12;
-} 
+}
 
 int inst_sub_a(CPU* cpu, void* data) { cpu->registers.A = sub_bytes(cpu->registers.A, cpu->registers.A, &cpu->registers.F); return 4; }
 int inst_sub_b(CPU* cpu, void* data) { cpu->registers.A = sub_bytes(cpu->registers.A, cpu->registers.B, &cpu->registers.F); return 4; }
@@ -382,17 +382,17 @@ int inst_cp_l(CPU* cpu, void* data) { sub_bytes(cpu->registers.A, cpu->registers
 int inst_cp_ahl(CPU* cpu, void* data) { sub_bytes(cpu->registers.A, Memory_Read_byte(&cpu->memory, cpu->registers.HL), &cpu->registers.F); return 8; }
 int inst_cp_ib(CPU* cpu, void* data) { sub_bytes(cpu->registers.A, *(byte*)data, &cpu->registers.F); return 8; }
 
-int inst_ld_b_ib(CPU* cpu, void* data) {cpu->registers.B = *(byte*)data; return 8; } 
-int inst_ld_c_ib(CPU* cpu, void* data) {cpu->registers.C = *(byte*)data; return 8; } 
-int inst_ld_d_ib(CPU* cpu, void* data) {cpu->registers.D = *(byte*)data; return 8; } 
-int inst_ld_e_ib(CPU* cpu, void* data) {cpu->registers.E = *(byte*)data; return 8; } 
-int inst_ld_h_ib(CPU* cpu, void* data) {cpu->registers.H = *(byte*)data; return 8; } 
-int inst_ld_l_ib(CPU* cpu, void* data) {cpu->registers.L = *(byte*)data; return 8; } 
+int inst_ld_b_ib(CPU* cpu, void* data) {cpu->registers.B = *(byte*)data; return 8; }
+int inst_ld_c_ib(CPU* cpu, void* data) {cpu->registers.C = *(byte*)data; return 8; }
+int inst_ld_d_ib(CPU* cpu, void* data) {cpu->registers.D = *(byte*)data; return 8; }
+int inst_ld_e_ib(CPU* cpu, void* data) {cpu->registers.E = *(byte*)data; return 8; }
+int inst_ld_h_ib(CPU* cpu, void* data) {cpu->registers.H = *(byte*)data; return 8; }
+int inst_ld_l_ib(CPU* cpu, void* data) {cpu->registers.L = *(byte*)data; return 8; }
 
-int inst_ld_bc_il(CPU* cpu, void* data) {cpu->registers.BC = *(lbyte*)data; return 12; } 
-int inst_ld_de_il(CPU* cpu, void* data) {cpu->registers.DE = *(lbyte*)data; return 12; } 
-int inst_ld_hl_il(CPU* cpu, void* data) {cpu->registers.HL = *(lbyte*)data; return 12; } 
-int inst_ld_sp_il(CPU* cpu, void* data) {cpu->registers.SP = *(lbyte*)data; return 12; } 
+int inst_ld_bc_il(CPU* cpu, void* data) {cpu->registers.BC = *(lbyte*)data; return 12; }
+int inst_ld_de_il(CPU* cpu, void* data) {cpu->registers.DE = *(lbyte*)data; return 12; }
+int inst_ld_hl_il(CPU* cpu, void* data) {cpu->registers.HL = *(lbyte*)data; return 12; }
+int inst_ld_sp_il(CPU* cpu, void* data) {cpu->registers.SP = *(lbyte*)data; return 12; }
 
 int inst_ldd_ahl_a(CPU* cpu, void* data) { inst_ld_ahl_a(cpu, NULL); inst_dec_hl(cpu, NULL); return 8; }
 int inst_ldd_a_ahl(CPU* cpu, void* data) { inst_ld_a_ahl(cpu, NULL); inst_dec_hl(cpu, NULL); return 8; }
@@ -403,10 +403,10 @@ int inst_ldh_a_aib(CPU* cpu, void* data){ cpu->registers.A = Memory_Read_byte(&c
 
 int inst_nop(CPU* cpu, void* data)
 {
-    return 4;    
+    return 4;
 }
 
-int inst_stop(CPU* cpu, void* data) 
+int inst_stop(CPU* cpu, void* data)
 {
     cpu_Stopped = true;
     return 4;
@@ -423,11 +423,11 @@ int inst_cpl(CPU* cpu, void* data)
 int inst_ccf(CPU* cpu, void* data)
 {
     cpu->registers.A = ~cpu->registers.A;
-    if(flags_IsC(cpu->registers.F)) 
+    if(flags_IsC(cpu->registers.F))
         flags_ResetC(&cpu->registers.F);
-    else 
+    else
         flags_SetC(&cpu->registers.F);
-    
+
     flags_ResetH(&cpu->registers.F);
     flags_ResetN(&cpu->registers.F);
 
@@ -457,21 +457,21 @@ int inst_jp_fz_nn(CPU* cpu, void* data)
     return 12;
 }
 
-int inst_jp_fnz_nn(CPU* cpu, void* data) 
+int inst_jp_fnz_nn(CPU* cpu, void* data)
 {
     if(!flags_IsZ(cpu->registers.F))
         cpu->registers.PC = *(lbyte*)data;
     return 12;
 }
 
-int inst_jp_fnc_nn(CPU* cpu, void* data) 
+int inst_jp_fnc_nn(CPU* cpu, void* data)
 {
     if(!flags_IsC(cpu->registers.F))
         cpu->registers.PC = *(lbyte*)data;
     return 12;
 }
 
-int inst_jp_fc_nn(CPU* cpu, void* data) 
+int inst_jp_fc_nn(CPU* cpu, void* data)
 {
     if(flags_IsC(cpu->registers.F))
         cpu->registers.PC = *(lbyte*)data;
@@ -588,3 +588,19 @@ int inst_di(CPU* cpu, void* data) {
     //dummy TODO
     return 4;
 }
+
+void rst(CPU* cpu, byte address)
+{
+  //push current address onto stack and jump to $0000 + address
+  stack_push(cpu, cpu->registers.PC);
+  cpu->registers.PC = (lbyte)address;
+}
+
+int inst_rst_00(CPU* cpu, void* data) { rst(cpu, 0x00); return 32; }
+int inst_rst_08(CPU* cpu, void* data) { rst(cpu, 0x08); return 32; }
+int inst_rst_10(CPU* cpu, void* data) { rst(cpu, 0x10); return 32; }
+int inst_rst_18(CPU* cpu, void* data) { rst(cpu, 0x18); return 32; }
+int inst_rst_20(CPU* cpu, void* data) { rst(cpu, 0x20); return 32; }
+int inst_rst_28(CPU* cpu, void* data) { rst(cpu, 0x28); return 32; }
+int inst_rst_30(CPU* cpu, void* data) { rst(cpu, 0x30); return 32; }
+int inst_rst_38(CPU* cpu, void* data) { rst(cpu, 0x38); return 32; }
