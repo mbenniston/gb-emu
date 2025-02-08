@@ -1,0 +1,109 @@
+interface JoypadState {
+    void JoypadState();
+    attribute boolean selectPressed;
+    attribute boolean startPressed;
+    attribute boolean downPressed;
+    attribute boolean upPressed;
+    attribute boolean leftPressed;
+    attribute boolean rightPressed;
+    attribute boolean aPressed;
+    attribute boolean bPressed;
+};
+
+interface DebugCPUState {
+    void DebugCPUState();
+    attribute long AF;
+    attribute long BC;
+    attribute long DE;
+    attribute long HL;
+    attribute long PC;
+    attribute long SP;
+};
+
+
+interface DebugTimerControllerState {
+    attribute long div;
+    attribute byte tima;
+    attribute byte tma;
+    attribute byte tac;
+    attribute boolean tac_enabled;
+    attribute long tac_increment;
+};
+
+interface DebugInstruction {
+    void DebugInstruction();
+    attribute DOMString mnemonic;
+    attribute long opcode;
+    attribute boolean isPrefix;
+};
+
+interface DebugInstructionTable {
+    attribute DebugInstruction[] instructions;
+    attribute long instructions_length;
+    attribute DebugInstruction[] extended_instructions;
+    attribute long extended_instructions_length;
+};
+
+interface DebugMemoryDump {
+    attribute long[] data;
+    attribute long data_length;
+};
+
+interface DebugTileSetDump {
+    attribute byte[] data;
+    attribute long data_length;
+    attribute long width;
+    attribute long height;
+    attribute long channels;
+};
+
+interface DebugBreakpoints {
+    void DebugBreakpoints(long length);
+    attribute long[] breakpoints;
+    attribute long breakpoints_length;
+};
+
+interface DebugInterruptsState {
+    attribute boolean ime;
+    attribute byte register_if;
+    attribute byte register_ie;
+
+    attribute boolean joypad_requested;
+    attribute boolean serial_requested;
+    attribute boolean timer_requested;
+    attribute boolean lcd_requested;
+    attribute boolean vblank_requested;
+
+    attribute boolean joypad_enabled;
+    attribute boolean serial_enabled;
+    attribute boolean timer_enabled;
+    attribute boolean lcd_enabled;
+    attribute boolean vblank_enabled;
+};
+
+interface Emulator {
+    void Emulator(byte[] data, long data_length);
+
+    void tick(JoypadState joypadState);
+    void tick_single();
+
+    VoidPtr get_framebuffer_ptr();
+    long get_framebuffer_width();
+    long get_framebuffer_height();
+    long get_framebuffer_channels();
+
+    long debug_tick(JoypadState joypadState);
+
+    DebugCPUState get_debug_cpu_state();
+    DebugTimerControllerState get_debug_timer_controller_state();
+    DebugInterruptsState get_debug_interrupts_state();
+
+    DebugInstructionTable get_debug_instruction_table();
+
+    long get_debug_memory_max();
+    DebugMemoryDump get_debug_dump_memory_range(long range_start, long range_length);
+    DebugTileSetDump get_debug_dump_tileset();
+
+   DebugBreakpoints get_debug_breakpoints();
+   void set_debug_breakpoints(DebugBreakpoints breakpoints);
+};
