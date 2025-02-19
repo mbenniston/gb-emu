@@ -40,6 +40,24 @@ export const useGameboy = ({
     return false;
   }, []);
 
+  const handleButtonDown = useCallback((k: (typeof keymap)[string]) => {
+    const joypad = joypadRef.current;
+    if (joypad !== null) {
+      joypad[k] = true;
+      return true;
+    }
+    return false;
+  }, []);
+
+  const handleButtonUp = useCallback((k: (typeof keymap)[string]) => {
+    const joypad = joypadRef.current;
+    if (joypad !== null) {
+      joypad[k] = false;
+      return true;
+    }
+    return false;
+  }, []);
+
   const { settings } = useGlobalDebuggerSettings();
 
   const step = useCallback(
@@ -144,6 +162,8 @@ export const useGameboy = ({
     setPlayMode,
     handleKeyDown,
     handleKeyUp,
+    handleButtonDown,
+    handleButtonUp,
   };
 };
 const keymap: Record<
@@ -166,3 +186,5 @@ const keymap: Record<
   a: "aPressed",
   b: "bPressed",
 } as const;
+
+export type GameboyButton = (typeof keymap)[string];
