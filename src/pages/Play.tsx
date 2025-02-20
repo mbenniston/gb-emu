@@ -242,7 +242,7 @@ function DPad({
       <button
         ref={rightRef}
         className={clsx(
-          "w-12 h-12 select-none rounded-r-btn",
+          "w-16  h-16 select-none rounded-r-btn",
           !rightDown ? "bg-base-200" : "bg-base-200/80",
         )}
         onPointerDown={() => handleButtonDown("rightPressed")}
