@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "gbemuweb:build": "docker build --output=./src .",
+    "build:docker": "docker build -f ./gbemu.dockerfile --output=. .",
+    "gbemuweb:build": "docker build -f ./gbemu-wasm.dockerfile --output=./src .",
     "gbemuweb:generate-types": "webidl-dts-gen -d -n GBEmu -e -i gbemuweb/bindings.idl -o ./src/gbemu.d.ts",
     "lint": "eslint .",
     "docs:generate-release-notes": "node ./generateReleaseNotes.mjs",

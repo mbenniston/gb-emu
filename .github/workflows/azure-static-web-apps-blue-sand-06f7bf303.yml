@@ -15,14 +15,17 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
           lfs: false
+          fetch-depth: 0
+      - name: Add git folder
+        run: git config --global --add safe.directory "$(pwd)"
       - name: Build WASM binary
         run: npm run gbemuweb:build
-      - name: Generate release notes
-        run: npm run docs:generate-release-notes
+      - name: Build Web app
+        run: npm run build:docker
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
@@ -32,9 +35,10 @@ jobs:
           action: "upload"
           ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
           # For more information regarding Static Web Debug workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-          app_location: "/" # Debug source code path
+          app_location: "/dist" # Debug source code path
           api_location: "" # Api source code path - optional
-          output_location: "dist" # Built app content directory - optional
+          skip_app_build: true
+          output_location: "" # Built app content directory - optional
           ###### End of Repository/Build Configurations ######
 
   close_pull_request_job:

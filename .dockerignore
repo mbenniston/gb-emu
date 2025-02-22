@@ -1,5 +1,2 @@
-*
-
-!/gbemu
-!/gbemuweb
-!/CMakeLists.txt
+!.git
+node_modules
