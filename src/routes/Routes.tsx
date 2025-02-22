@@ -4,6 +4,7 @@ import { Home } from "../pages/Home.tsx";
 import { PageLayout } from "@/layout/PageLayout.tsx";
 import { Debug } from "@/pages/Debug.tsx";
 import { Play } from "@/pages/Play.tsx";
+import { ReleaseNotes } from "@/pages/ReleaseNotes.tsx";
 
 const router = createBrowserRouter([
   {
@@ -24,6 +25,11 @@ const router = createBrowserRouter([
         path: PLAY_PAGE.path,
         element: <Play />,
         handle: PLAY_PAGE.id,
+      },
+      {
+        path: "release-notes",
+        element: <ReleaseNotes />,
+        handle: "release-notes",
       },
     ],
   },

@@ -6,10 +6,10 @@ export default {
     themes: [
       {
         light: {
-          ...require("daisyui/src/theming/themes")["retro"],
+          ...require("daisyui/src/theming/themes")["lofi"],
         },
         dark: {
-          ...require("daisyui/src/theming/themes")["black"],
+          ...require("daisyui/src/theming/themes")["business"],
         },
       },
     ],

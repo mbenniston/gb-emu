@@ -28,3 +28,4 @@ src/gbemu.mjs
 src/gbemu.wasm
 
 /dev-dist
+.env
