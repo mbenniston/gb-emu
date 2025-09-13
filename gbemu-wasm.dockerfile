@@ -1,4 +1,4 @@
-FROM emscripten/emsdk:4.0.2
+FROM emscripten/emsdk:4.0.14
 
 WORKDIR /build
 RUN apt-get update && apt-get -y install cmake python3

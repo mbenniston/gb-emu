@@ -3,7 +3,7 @@ import { useGBEmu } from "@/context/GBEmuContext.tsx";
 import { useEmulator } from "@/context/EmulatorContext.tsx";
 import GBEmu from "@/gbemu";
 import { useQueryClient } from "@tanstack/react-query";
-import { useGlobalDebuggerSettings } from "@/context/GlobalDebuggerSettingsContext.tsx";
+import { useGlobalDebuggerSettings } from "@/context/useGlobalDebuggerSettings.ts";
 
 export const MAX_SPEED = 1000;
 
@@ -11,7 +11,7 @@ export const useGameboy = ({
   canvasRef,
   initialPlayState = "single-step",
 }: {
-  canvasRef: RefObject<HTMLCanvasElement>;
+  canvasRef: RefObject<HTMLCanvasElement | null>;
   initialPlayState?: "single-step" | "playing";
 }) => {
   const { module } = useGBEmu();
@@ -80,17 +80,15 @@ export const useGameboy = ({
       imageData.data.set(view);
       const bitmap = await createImageBitmap(imageData);
 
-      if (context) {
-        context.imageSmoothingEnabled = false;
-        context.drawImage(bitmap, 0, 0);
-      }
+      context.imageSmoothingEnabled = false;
+      context.drawImage(bitmap, 0, 0);
 
       void queryClient.invalidateQueries({
         queryKey: ["debug"],
         refetchType: "all",
       });
     },
-    [module, emulator],
+    [emulator, module.HEAPU8, canvasRef, queryClient],
   );
 
   useEffect(() => {
@@ -142,7 +140,10 @@ export const useGameboy = ({
           const elapsed = end - start;
           const timeout = Math.max(0, 16.67 - elapsed);
 
-          setTimeout(() => requestAnimationFrame(runFrame), timeout);
+          setTimeout(
+            () => requestAnimationFrame(() => void runFrame()),
+            timeout,
+          );
         }
 
         void runFrame();
@@ -154,7 +155,7 @@ export const useGameboy = ({
         module.destroy(joypadState);
       };
     }
-  }, [playMode, settings]);
+  }, [canvasRef, emulator, module, playMode, queryClient, settings]);
 
   return {
     step,

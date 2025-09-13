@@ -145,9 +145,9 @@ declare module GBEmu {
         breakpoints_length: number;
     }
     class DebugInterruptsState {
-        get_ime(): bool;
-        set_ime(ime: bool): void;
-        ime: bool;
+        get_ime(): boolean;
+        set_ime(ime: boolean): void;
+        ime: boolean;
         get_register_if(): number;
         set_register_if(register_if: number): void;
         register_if: number;

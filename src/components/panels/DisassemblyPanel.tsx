@@ -144,7 +144,7 @@ function InstructionView({
 }) {
   const address = index.toString(16);
   let b1 = 0;
-  let b2 = 0;
+  const b2 = 0;
   for (const dump of memory) {
     if (!dump.data) continue;
     const dumpIndex = index - dump.data.start;
@@ -262,14 +262,14 @@ function DisassemblyActions({
       </ViewModeSelectButton>
       <ViewModeSelectButton
         onClick={() => {
-          registersQuery.data && scrollTo(registersQuery.data.PC);
+          if (registersQuery.data) scrollTo(registersQuery.data.PC);
         }}
       >
         PC
       </ViewModeSelectButton>
       <ViewModeSelectButton
         onClick={() => {
-          registersQuery.data && scrollTo(registersQuery.data.SP);
+          if (registersQuery.data) scrollTo(registersQuery.data.SP);
         }}
       >
         SP

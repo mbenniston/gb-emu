@@ -19,16 +19,14 @@ export function TileDataPanel() {
       const context = ref.current?.getContext("2d");
       if (!context) return;
 
-      (async () => {
+      void (async () => {
         const imageData = context.createImageData(width, height);
 
         imageData.data.set(data);
         const bitmap = await createImageBitmap(imageData);
 
-        if (context) {
-          context.imageSmoothingEnabled = false;
-          context.drawImage(bitmap, 0, 0, bitmap.width, bitmap.height);
-        }
+        context.imageSmoothingEnabled = false;
+        context.drawImage(bitmap, 0, 0, bitmap.width, bitmap.height);
       })();
     }
   }, [tileSetQueryData]);

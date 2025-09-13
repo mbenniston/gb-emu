@@ -10,6 +10,7 @@ export const DEBUGGER_PAGE = {
   id: "debugger",
   title: "Debugger",
   path: "/debugger",
+  hasLink: true,
 } as const;
 
 export const PLAY_PAGE = {

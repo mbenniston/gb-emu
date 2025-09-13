@@ -1,8 +1,6 @@
 import { Cog6ToothIcon } from "@heroicons/react/16/solid";
-import {
-  updateFrequencyOptions,
-  useGlobalDebuggerSettings,
-} from "@/context/GlobalDebuggerSettingsContext.tsx";
+import { useGlobalDebuggerSettings } from "@/context/useGlobalDebuggerSettings.ts";
+import { updateFrequencyOptions } from "@/context/updateFrequencyOptions.ts";
 
 export function FrequencyChangeButton() {
   const { settings, setSettings } = useGlobalDebuggerSettings();

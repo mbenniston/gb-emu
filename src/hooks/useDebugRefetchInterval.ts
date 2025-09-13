@@ -1,4 +1,4 @@
-import { useGlobalDebuggerSettings } from "@/context/GlobalDebuggerSettingsContext.tsx";
+import { useGlobalDebuggerSettings } from "@/context/useGlobalDebuggerSettings.ts";
 
 export function useDebugRefetchInterval() {
   const {

@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { EmulatorProvider } from "@/context/EmulatorContext.tsx";
 import { PanelGrid } from "@/components/PanelGrid.tsx";
 import { Panel } from "@/components/Panel.tsx";
 import { useUpdateBreakpoints } from "@/hooks/useBreakpoints.ts";
@@ -11,8 +10,9 @@ import { CPURegistersPanel } from "@/components/panels/CPURegistersPanel.tsx";
 import { TimersPanel } from "@/components/panels/TimersPanel.tsx";
 import { MemoryPanel } from "@/components/panels/MemoryPanel.tsx";
 import { InterruptsPanel } from "@/components/panels/InterruptsPanel.tsx";
-import { GlobalDebuggerSettingsProvider } from "@/context/GlobalDebuggerSettingsContext.tsx";
 import { FrequencyChangeButton } from "@/components/FrequencyChangeButton.tsx";
+import { GlobalDebuggerSettingsProvider } from "@/context/GlobalDebuggerSettingsProvider.tsx";
+import { EmulatorProvider } from "@/context/EmulatorProvider.tsx";
 
 export function Debug() {
   const [cartridgeData, setCartridgeData] = useState<Uint8Array | null>(null);
@@ -30,7 +30,7 @@ export function Debug() {
               type="file"
               className="file-input file-input-bordered w-full max-w-xs"
               onChange={(e) => {
-                const file = e.target?.files?.[0];
+                const file = e.target.files?.[0];
                 if (!file) return;
                 const loadFile = async () => {
                   const data = await file.arrayBuffer();
@@ -56,12 +56,12 @@ function DebuggerGrid() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { playMode, setPlayMode, step, handleKeyDown, handleKeyUp } =
     useGameboy({ canvasRef });
-  const updateBreakpointsMutation = useUpdateBreakpoints();
+  const { mutate } = useUpdateBreakpoints();
   const [breakpoints, setBreakpoints] = useState<number[]>([]);
 
   useEffect(() => {
-    updateBreakpointsMutation.mutate({ breakpoints });
-  }, [breakpoints]);
+    mutate({ breakpoints });
+  }, [breakpoints, mutate]);
 
   return (
     <div>
@@ -93,7 +93,7 @@ function DebuggerGrid() {
         <InterruptsPanel />
         <ControlsPanel
           reset={() => {}}
-          step={step}
+          step={() => void step()}
           run={() => {
             setPlayMode("playing");
           }}
