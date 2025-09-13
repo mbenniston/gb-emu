@@ -8,7 +8,7 @@ COPY . .
 # check formatting
 RUN find . -type f \( -name "*.c" -o -name "*.h" -o -name "*.hpp" -o -name "*.cpp" \) -exec clang-format --dry-run --Werror {} +
 
-RUN emcmake cmake . -DCMAKE_BUILD_TYPE=Release
+RUN emcmake cmake . -DCMAKE_BUILD_TYPE=Release -DENABLE_NATIVE_BUILD=OFF -DENABLE_BROWSER_LIBRARY=ON
 
 # generate glue code for C++ (compiled into libgbweb-web) and JavaScript (added to --post-js)
 RUN /emsdk/upstream/emscripten/tools/webidl_binder gbemuweb/bindings.idl glue

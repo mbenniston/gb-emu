@@ -3,6 +3,9 @@
 
 #include "instruction.h"
 
+void instructions_init();
+void extended_instructions_init();
+
 uint16_t uint8_sign_extend_uint16(uint8_t value);
 
 instruction_result_t instruction_nop(cpu_t *cpu, bus_t *bus);
@@ -1029,7 +1032,7 @@ instruction_result_t instruction_set_7_deref_hl(cpu_t *cpu, bus_t *bus);
 
 instruction_result_t instruction_set_7_a(cpu_t *cpu, bus_t *bus);
 
-extern const instruction_t instructions[];
-extern const instruction_t extended_instructions[];
+extern instruction_t instructions[];
+extern instruction_t extended_instructions[];
 
 #endif

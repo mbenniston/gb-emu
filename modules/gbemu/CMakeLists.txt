@@ -17,4 +17,6 @@ add_library(gbemu
         mbcs/mbc3.c
         mbcs/mbc3_ram_battery.c)
 
+target_include_directories(gbemu PUBLIC .)
+
 set_property(TARGET gbemu PROPERTY C_STANDARD 11)

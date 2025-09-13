@@ -1,4 +1,5 @@
 !.git
 node_modules
+./applications/gbemu-web/node_modules
 ./applications/gbemu-web/src/gbemu.mjs
 ./applications/gbemu-web/src/gbemu.wasm

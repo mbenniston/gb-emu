@@ -19,6 +19,8 @@ void cpu_create(cpu_t *cpu) {
   cpu->registers.PC = 0x100;
   cpu->registers.SP = 0xFFFE;
   cpu->halted = 0;
+  instructions_init();
+  extended_instructions_init();
 }
 
 void cpu_tick(cpu_t *cpu, bus_t *bus, int *machine_cycles_elapsed) {
