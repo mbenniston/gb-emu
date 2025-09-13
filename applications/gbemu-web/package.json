@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:docker": "docker build -f ./gbemu.dockerfile --output=. .",
     "gbemuweb:generate-types": "webidl-dts-gen -d -n GBEmu -e -i gbemuweb/bindings.idl -o ./src/gbemu.d.ts",
     "lint": "eslint .",
     "lint:css": "stylelint **/*.css",

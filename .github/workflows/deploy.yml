@@ -23,7 +23,7 @@ jobs:
       - name: Add git folder
         run: git config --global --add safe.directory "$(pwd)"
       - name: Build Web app
-        run: npm run build:docker
+        run: docker build -f ./gbemu.dockerfile --output=. . 
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1

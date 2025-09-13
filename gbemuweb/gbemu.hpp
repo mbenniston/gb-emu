@@ -1,7 +1,7 @@
 #pragma once
 
 extern "C" {
-#include "../gbemu/cartridge.h"
-#include "../gbemu/emulator.h"
-#include "../gbemu/instructions/instructions.h"
+#include "../modules/gbemu/cartridge.h"
+#include "../modules/gbemu/emulator.h"
+#include "../modules/gbemu/instructions/instructions.h"
 }

@@ -17,7 +17,7 @@ RUN emmake make
 
 # extract object files from generated libraries (to avoid symbol stripping)
 RUN mkdir libgbemu_objects libgbemu-web_objects
-RUN emar --output libgbemu_objects -x libgbemu.a
+RUN emar --output libgbemu_objects -x ./modules/gbemu/libgbemu.a
 RUN emar --output libgbemu-web_objects -x libgbemu-web.a
 
 # compile to web assembly
@@ -36,19 +36,21 @@ FROM node:22-bullseye AS webapp
 
 WORKDIR /build
 
-COPY ./package.json .
-COPY ./package-lock.json .
+COPY ./applications/gbemu-web/package.json .
+COPY ./applications/gbemu-web/package-lock.json .
 RUN npm ci
-COPY . .
+COPY ./applications/gbemu-web .
+
+RUN npm run lint
+RUN npm run lint:css
+RUN npm run lint:format
+
 COPY --from=gbemu /build/gbemu.mjs /build/src
 COPY --from=gbemu /build/gbemu.wasm /build/src
 
 COPY .git .
 RUN npm run docs:generate-release-notes
 RUN npm run build
-RUN npm run lint
-RUN npm run lint:css
-RUN npm run lint:format
 
 FROM scratch
 COPY --from=webapp /build/dist /dist
