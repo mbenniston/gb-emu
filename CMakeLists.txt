@@ -29,5 +29,6 @@ add_library(gbemu-web
 
 set_property(TARGET gbemu PROPERTY C_STANDARD 11)
 set_property(TARGET gbemu-web PROPERTY C_STANDARD 11)
+set_property(TARGET gbemu-web PROPERTY CXX_STANDARD 20)
 
 target_link_libraries(gbemu-web PRIVATE gbemu)
