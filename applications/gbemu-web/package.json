@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "gbemuweb:generate-types": "webidl-dts-gen -d -n GBEmu -e -i gbemuweb/bindings.idl -o ./src/gbemu.d.ts",
+    "gbemuweb:generate-types": "webidl-dts-gen -d -n GBEmu -e -i bindings.idl -o ./src/gbemu.d.ts",
     "lint": "eslint .",
     "lint:css": "stylelint **/*.css",
     "lint:format": "prettier -c **/*.{ts,js,tsx,jsx,mjs}",

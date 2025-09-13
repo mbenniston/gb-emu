@@ -40,13 +40,18 @@ COPY ./applications/gbemu-web/package.json .
 COPY ./applications/gbemu-web/package-lock.json .
 RUN npm ci
 COPY ./applications/gbemu-web .
+COPY ./gbemuweb/bindings.idl .
+
+RUN npm run lint:format
+RUN npm run lint:css
+
+RUN npm run gbemuweb:generate-types
 
 RUN npm run lint
-RUN npm run lint:css
-RUN npm run lint:format
 
 COPY --from=gbemu /build/gbemu.mjs /build/src
 COPY --from=gbemu /build/gbemu.wasm /build/src
+
 
 COPY .git .
 RUN npm run docs:generate-release-notes
