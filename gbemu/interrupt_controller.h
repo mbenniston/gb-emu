@@ -19,8 +19,8 @@
 #define IF_ADDRESS 0xFF0F
 
 typedef struct {
-    uint8_t register_ie;
-    uint8_t register_if;
+  uint8_t register_ie;
+  uint8_t register_if;
 } interrupt_controller_t;
 
 void interrupt_controller_create(interrupt_controller_t *controller);

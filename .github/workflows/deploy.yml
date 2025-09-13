@@ -22,8 +22,6 @@ jobs:
           fetch-depth: 0
       - name: Add git folder
         run: git config --global --add safe.directory "$(pwd)"
-      - name: Build WASM binary
-        run: npm run gbemuweb:build
       - name: Build Web app
         run: npm run build:docker
       - name: Build And Deploy

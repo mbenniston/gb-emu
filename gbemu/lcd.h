@@ -29,13 +29,13 @@
 #define STAT_ADDRESS 0xFF41
 
 typedef struct {
-    uint8_t framebuffer[FB_WIDTH * FB_HEIGHT * FB_CHANNELS];
+  uint8_t framebuffer[FB_WIDTH * FB_HEIGHT * FB_CHANNELS];
 
-    int frame_ready;
-    uint8_t register_lcdc;
-    uint8_t register_ly;
-    uint8_t register_lyc;
-    uint8_t register_stat;
+  int frame_ready;
+  uint8_t register_lcdc;
+  uint8_t register_ly;
+  uint8_t register_lyc;
+  uint8_t register_stat;
 } lcd_t;
 
 void lcd_create(lcd_t *lcd);

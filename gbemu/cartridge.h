@@ -12,14 +12,12 @@
 
 #define CARTRIDGE_MIN_LENGTH (32 * 1024)
 
-
 typedef struct {
-    uint8_t *data;
-    uint32_t data_length;
-    char title[CARTRIDGE_TITLE_LENGTH + 1];
-    mbc_t mbc;
+  uint8_t *data;
+  uint32_t data_length;
+  char title[CARTRIDGE_TITLE_LENGTH + 1];
+  mbc_t mbc;
 } cartridge_t;
-
 
 cartridge_type_e cartridge_type(cartridge_t *rom);
 

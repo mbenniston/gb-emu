@@ -114,16 +114,24 @@ function Buttons({
       <div className="flex gap-2">
         <button
           className="btn btn-square"
-          onPointerDown={() => { handleButtonDown("aPressed"); }}
-          onPointerUp={() => { handleButtonUp("aPressed"); }}
+          onPointerDown={() => {
+            handleButtonDown("aPressed");
+          }}
+          onPointerUp={() => {
+            handleButtonUp("aPressed");
+          }}
         >
           A
         </button>
         <div className="pt-4">
           <button
             className="btn btn-square"
-            onPointerDown={() => { handleButtonDown("bPressed"); }}
-            onPointerUp={() => { handleButtonUp("bPressed"); }}
+            onPointerDown={() => {
+              handleButtonDown("bPressed");
+            }}
+            onPointerUp={() => {
+              handleButtonUp("bPressed");
+            }}
           >
             B
           </button>
@@ -133,15 +141,23 @@ function Buttons({
       <div>
         <button
           className="btn"
-          onPointerDown={() => { handleButtonDown("selectPressed"); }}
-          onPointerUp={() => { handleButtonUp("selectPressed"); }}
+          onPointerDown={() => {
+            handleButtonDown("selectPressed");
+          }}
+          onPointerUp={() => {
+            handleButtonUp("selectPressed");
+          }}
         >
           SELECT
         </button>
         <button
           className="btn"
-          onPointerDown={() => { handleButtonDown("startPressed"); }}
-          onPointerUp={() => { handleButtonUp("startPressed"); }}
+          onPointerDown={() => {
+            handleButtonDown("startPressed");
+          }}
+          onPointerUp={() => {
+            handleButtonUp("startPressed");
+          }}
         >
           START
         </button>
@@ -224,8 +240,12 @@ function DPad({
           "w-16  h-16 select-none rounded-t-btn",
           !upDown ? "bg-base-200" : "bg-base-200/80",
         )}
-        onPointerDown={() => { handleButtonDown("upPressed"); }}
-        onPointerUp={() => { handleButtonUp("upPressed"); }}
+        onPointerDown={() => {
+          handleButtonDown("upPressed");
+        }}
+        onPointerUp={() => {
+          handleButtonUp("upPressed");
+        }}
       ></button>
       <div />
 
@@ -235,8 +255,12 @@ function DPad({
           "w-16  h-16 select-none rounded-l-btn",
           !leftDown ? "bg-base-200" : "bg-base-200/80",
         )}
-        onPointerDown={() => { handleButtonDown("leftPressed"); }}
-        onPointerUp={() => { handleButtonUp("leftPressed"); }}
+        onPointerDown={() => {
+          handleButtonDown("leftPressed");
+        }}
+        onPointerUp={() => {
+          handleButtonUp("leftPressed");
+        }}
       ></button>
       <div className={"bg-base-200"} />
       <button
@@ -245,8 +269,12 @@ function DPad({
           "w-16  h-16 select-none rounded-r-btn",
           !rightDown ? "bg-base-200" : "bg-base-200/80",
         )}
-        onPointerDown={() => { handleButtonDown("rightPressed"); }}
-        onPointerUp={() => { handleButtonUp("rightPressed"); }}
+        onPointerDown={() => {
+          handleButtonDown("rightPressed");
+        }}
+        onPointerUp={() => {
+          handleButtonUp("rightPressed");
+        }}
       ></button>
       <div />
       <button
@@ -255,8 +283,12 @@ function DPad({
           "w-16 h-16 select-none rounded-b-btn",
           !downDown ? "bg-base-200" : "bg-base-200/80",
         )}
-        onPointerDown={() => { handleButtonDown("downPressed"); }}
-        onPointerUp={() => { handleButtonUp("downPressed"); }}
+        onPointerDown={() => {
+          handleButtonDown("downPressed");
+        }}
+        onPointerUp={() => {
+          handleButtonUp("downPressed");
+        }}
       ></button>
       <div />
     </div>

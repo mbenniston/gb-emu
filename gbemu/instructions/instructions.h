@@ -1029,7 +1029,6 @@ instruction_result_t instruction_set_7_deref_hl(cpu_t *cpu, bus_t *bus);
 
 instruction_result_t instruction_set_7_a(cpu_t *cpu, bus_t *bus);
 
-
 extern const instruction_t instructions[];
 extern const instruction_t extended_instructions[];
 

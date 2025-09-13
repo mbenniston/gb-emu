@@ -8,40 +8,40 @@
 #define C_BIT (1 << 4)
 
 typedef struct {
-    union {
-        uint16_t AF;
+  union {
+    uint16_t AF;
 
-        struct {
-            uint8_t F, A;
-        };
+    struct {
+      uint8_t F, A;
     };
+  };
 
-    union {
-        uint16_t BC;
+  union {
+    uint16_t BC;
 
-        struct {
-            uint8_t C, B;
-        };
+    struct {
+      uint8_t C, B;
     };
+  };
 
-    union {
-        uint16_t DE;
+  union {
+    uint16_t DE;
 
-        struct {
-            uint8_t E, D;
-        };
+    struct {
+      uint8_t E, D;
     };
+  };
 
-    union {
-        uint16_t HL;
+  union {
+    uint16_t HL;
 
-        struct {
-            uint8_t L, H;
-        };
+    struct {
+      uint8_t L, H;
     };
+  };
 
-    uint16_t SP;
-    uint16_t PC;
+  uint16_t SP;
+  uint16_t PC;
 } registers_t;
 
 void flags_reset_all(uint8_t *f);

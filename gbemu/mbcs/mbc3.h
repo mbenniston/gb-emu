@@ -4,9 +4,9 @@
 #include <stdint.h>
 
 typedef struct {
-    uint8_t *rom_data;
-    int selected_bank;
-    int mode;
+  uint8_t *rom_data;
+  int selected_bank;
+  int mode;
 } mbc_mbc3_t;
 
 int mbc_mbc3_create(mbc_mbc3_t *mbc, uint8_t *rom_data, uint32_t rom_length);

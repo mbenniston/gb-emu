@@ -3,407 +3,488 @@
 #include <assert.h>
 
 void push_uint16(cpu_t *cpu, bus_t *bus, uint16_t value) {
-    bus_write(bus, --cpu->registers.SP, value >> 8);
-    bus_write(bus, --cpu->registers.SP, value & 0xFF);
+  bus_write(bus, --cpu->registers.SP, value >> 8);
+  bus_write(bus, --cpu->registers.SP, value & 0xFF);
 }
 
 void push_uint8(cpu_t *cpu, bus_t *bus, uint8_t value) {
-    bus_write(bus, --cpu->registers.SP, value);
+  bus_write(bus, --cpu->registers.SP, value);
 }
 
 uint8_t pop_uint8(cpu_t *cpu, bus_t *bus) {
-    return bus_read(bus, cpu->registers.SP++);
+  return bus_read(bus, cpu->registers.SP++);
 }
 
 uint16_t pop_uint16(cpu_t *cpu, bus_t *bus) {
-    return bus_read(bus, cpu->registers.SP++) | bus_read(bus, cpu->registers.SP++) << 8;
+  return bus_read(bus, cpu->registers.SP++) | bus_read(bus, cpu->registers.SP++)
+                                                  << 8;
 }
 
 int add_has_overflow_uint8(uint8_t left, uint8_t right) {
-    return (uint16_t) left + (uint16_t) right > 0xFF;
+  return (uint16_t)left + (uint16_t)right > 0xFF;
 }
 
-int add_has_overflow_with_carry_uint8(uint8_t left, uint8_t right, uint8_t carry) {
-    return (uint16_t) left + (uint16_t) right + (uint16_t) carry > 0xFF;
+int add_has_overflow_with_carry_uint8(uint8_t left, uint8_t right,
+                                      uint8_t carry) {
+  return (uint16_t)left + (uint16_t)right + (uint16_t)carry > 0xFF;
 }
 
 int add_has_half_overflow_uint8(uint8_t left, uint8_t right) {
-    return (left & 0xF) + (right & 0xF) > 0xF;
+  return (left & 0xF) + (right & 0xF) > 0xF;
 }
 
-int add_has_half_overflow_with_carry_uint8(uint8_t left, uint8_t right, uint8_t carry) {
-    return (left & 0xF) + (right & 0xF) + carry > 0xF;
+int add_has_half_overflow_with_carry_uint8(uint8_t left, uint8_t right,
+                                           uint8_t carry) {
+  return (left & 0xF) + (right & 0xF) + carry > 0xF;
 }
 
 int add_has_overflow_uint16(uint16_t left, uint16_t right) {
-    return (uint32_t) left + (uint32_t) right > 0xFFFF;
+  return (uint32_t)left + (uint32_t)right > 0xFFFF;
 }
 
 int add_has_half_overflow_uint16(uint16_t left, uint16_t right) {
-    return (left & 0xFFF) + (right & 0xFFF) > 0xFFF;
+  return (left & 0xFFF) + (right & 0xFFF) > 0xFFF;
 }
 
 int sub_has_half_borrow_uint8(uint8_t left, uint8_t right) {
-    return (int16_t) (left & 0xF) - (int16_t) (right & 0xF) < 0;
+  return (int16_t)(left & 0xF) - (int16_t)(right & 0xF) < 0;
 }
 
-int sub_has_half_borrow_with_carry_uint8(uint8_t left, uint8_t right, uint8_t carry) {
-    return (int16_t) (left & 0xF) - ((int16_t) (right & 0xF) + carry) < 0;
+int sub_has_half_borrow_with_carry_uint8(uint8_t left, uint8_t right,
+                                         uint8_t carry) {
+  return (int16_t)(left & 0xF) - ((int16_t)(right & 0xF) + carry) < 0;
 }
 
-int sub_has_borrow_with_carry_uint8(uint8_t left, uint8_t right, uint8_t carry) {
-    return (uint16_t) right + (uint16_t) carry > left;
+int sub_has_borrow_with_carry_uint8(uint8_t left, uint8_t right,
+                                    uint8_t carry) {
+  return (uint16_t)right + (uint16_t)carry > left;
 }
 
 uint8_t swap_uint8_with_flags(uint8_t input, uint8_t *flags_register) {
-    uint8_t result = (input & 0xF) << 4 | (input & 0xF0) >> 4;
+  uint8_t result = (input & 0xF) << 4 | (input & 0xF0) >> 4;
 
-    if (result == 0) flags_set_z(flags_register);
-    else flags_reset_z(flags_register);
+  if (result == 0)
+    flags_set_z(flags_register);
+  else
+    flags_reset_z(flags_register);
 
-    flags_reset_n(flags_register);
-    flags_reset_h(flags_register);
-    flags_reset_c(flags_register);
+  flags_reset_n(flags_register);
+  flags_reset_h(flags_register);
+  flags_reset_c(flags_register);
 
-    return result;
+  return result;
 }
 
-uint8_t and_uint8_with_flags(uint8_t left, uint8_t right, uint8_t *flags_register) {
-    uint8_t result = left & right;
+uint8_t and_uint8_with_flags(uint8_t left, uint8_t right,
+                             uint8_t *flags_register) {
+  uint8_t result = left & right;
 
-    if (result == 0) flags_set_z(flags_register);
-    else flags_reset_z(flags_register);
+  if (result == 0)
+    flags_set_z(flags_register);
+  else
+    flags_reset_z(flags_register);
 
-    flags_reset_n(flags_register);
-    flags_set_h(flags_register);
-    flags_reset_c(flags_register);
+  flags_reset_n(flags_register);
+  flags_set_h(flags_register);
+  flags_reset_c(flags_register);
 
-    return result;
+  return result;
 }
 
-uint8_t or_uint8_with_flags(uint8_t left, uint8_t right, uint8_t *flags_register) {
-    uint8_t result = left | right;
+uint8_t or_uint8_with_flags(uint8_t left, uint8_t right,
+                            uint8_t *flags_register) {
+  uint8_t result = left | right;
 
-    if (result == 0) flags_set_z(flags_register);
-    else flags_reset_z(flags_register);
+  if (result == 0)
+    flags_set_z(flags_register);
+  else
+    flags_reset_z(flags_register);
 
-    flags_reset_n(flags_register);
-    flags_reset_h(flags_register);
-    flags_reset_c(flags_register);
+  flags_reset_n(flags_register);
+  flags_reset_h(flags_register);
+  flags_reset_c(flags_register);
 
-    return result;
+  return result;
 }
 
-uint8_t xor_uint8_with_flags(uint8_t left, uint8_t right, uint8_t *flags_register) {
-    uint8_t result = left ^ right;
+uint8_t xor_uint8_with_flags(uint8_t left, uint8_t right,
+                             uint8_t *flags_register) {
+  uint8_t result = left ^ right;
 
-    if (result == 0) flags_set_z(flags_register);
-    else flags_reset_z(flags_register);
+  if (result == 0)
+    flags_set_z(flags_register);
+  else
+    flags_reset_z(flags_register);
 
-    flags_reset_n(flags_register);
-    flags_reset_h(flags_register);
-    flags_reset_c(flags_register);
+  flags_reset_n(flags_register);
+  flags_reset_h(flags_register);
+  flags_reset_c(flags_register);
 
-    return result;
+  return result;
 }
-
 
 uint8_t bit_with_flags(uint8_t value, int bit_index, uint8_t *flag_register) {
-    uint8_t result = (value & 1 << bit_index) >> bit_index;
+  uint8_t result = (value & 1 << bit_index) >> bit_index;
 
-    if (result == 0) flags_set_z(flag_register);
-    else flags_reset_z(flag_register);
+  if (result == 0)
+    flags_set_z(flag_register);
+  else
+    flags_reset_z(flag_register);
 
-    flags_reset_n(flag_register);
-    flags_set_h(flag_register);
+  flags_reset_n(flag_register);
+  flags_set_h(flag_register);
 
-    return result;
+  return result;
 }
 
-
 uint8_t set_with_flags(uint8_t value, int bit_index, uint8_t *flag_register) {
-    return value | 1 << bit_index;
+  return value | 1 << bit_index;
 }
 
 uint8_t reset_with_flags(uint8_t value, int bit_index, uint8_t *flag_register) {
-    return value & ~(1 << bit_index);
+  return value & ~(1 << bit_index);
 }
 
 uint8_t inc_uint8_with_flags(uint8_t left, uint8_t *flags_register) {
-    uint8_t result = left + 1;
+  uint8_t result = left + 1;
 
-    // Zero result
-    if (result == 0) flags_set_z(flags_register);
-    else flags_reset_z(flags_register);
+  // Zero result
+  if (result == 0)
+    flags_set_z(flags_register);
+  else
+    flags_reset_z(flags_register);
 
-    // Half overflow
-    if (add_has_half_overflow_uint8(left, 1)) flags_set_h(flags_register);
-    else flags_reset_h(flags_register);
+  // Half overflow
+  if (add_has_half_overflow_uint8(left, 1))
+    flags_set_h(flags_register);
+  else
+    flags_reset_h(flags_register);
 
-    // Not a subtraction
-    flags_reset_n(flags_register);
+  // Not a subtraction
+  flags_reset_n(flags_register);
 
-    return result;
+  return result;
 }
 
 uint8_t srl_uint8_with_flags(uint8_t input, uint8_t *flags_register) {
-    uint8_t result = input >> 1;
+  uint8_t result = input >> 1;
 
-    if (result == 0) flags_set_z(flags_register);
-    else flags_reset_z(flags_register);
+  if (result == 0)
+    flags_set_z(flags_register);
+  else
+    flags_reset_z(flags_register);
 
-    flags_reset_n(flags_register);
-    flags_reset_h(flags_register);
+  flags_reset_n(flags_register);
+  flags_reset_h(flags_register);
 
-    if ((input & 0x1) > 0) flags_set_c(flags_register);
-    else flags_reset_c(flags_register);
+  if ((input & 0x1) > 0)
+    flags_set_c(flags_register);
+  else
+    flags_reset_c(flags_register);
 
-    return result;
+  return result;
 }
 
 uint8_t sl_uint8_with_flags(uint8_t input, uint8_t *flags_register) {
-    uint8_t result = input << 1;
+  uint8_t result = input << 1;
 
-    if (result == 0) flags_set_z(flags_register);
-    else flags_reset_z(flags_register);
+  if (result == 0)
+    flags_set_z(flags_register);
+  else
+    flags_reset_z(flags_register);
 
-    flags_reset_n(flags_register);
-    flags_reset_h(flags_register);
+  flags_reset_n(flags_register);
+  flags_reset_h(flags_register);
 
-    if ((input & 0x80) > 0) flags_set_c(flags_register);
-    else flags_reset_c(flags_register);
+  if ((input & 0x80) > 0)
+    flags_set_c(flags_register);
+  else
+    flags_reset_c(flags_register);
 
-    return result;
+  return result;
 }
-
 
 uint8_t sr_uint8_with_flags(uint8_t input, uint8_t *flags_register) {
-    uint8_t result = input >> 1;
+  uint8_t result = input >> 1;
 
-    if (result == 0) flags_set_z(flags_register);
-    else flags_reset_z(flags_register);
+  if (result == 0)
+    flags_set_z(flags_register);
+  else
+    flags_reset_z(flags_register);
 
-    flags_reset_n(flags_register);
-    flags_reset_h(flags_register);
+  flags_reset_n(flags_register);
+  flags_reset_h(flags_register);
 
-    if (input & 0x1) flags_set_c(flags_register);
-    else flags_reset_c(flags_register);
+  if (input & 0x1)
+    flags_set_c(flags_register);
+  else
+    flags_reset_c(flags_register);
 
-    return result;
+  return result;
 }
-
 
 uint8_t sra_uint8_with_flags(uint8_t input, uint8_t *flags_register) {
-    uint8_t result = input & 0x80 ? input >> 1 | input & 0x80 : input >> 1;
+  uint8_t result = input & 0x80 ? input >> 1 | input & 0x80 : input >> 1;
 
-    if (result == 0) flags_set_z(flags_register);
-    else flags_reset_z(flags_register);
+  if (result == 0)
+    flags_set_z(flags_register);
+  else
+    flags_reset_z(flags_register);
 
-    flags_reset_n(flags_register);
-    flags_reset_h(flags_register);
+  flags_reset_n(flags_register);
+  flags_reset_h(flags_register);
 
-    if (input & 0x1) flags_set_c(flags_register);
-    else flags_reset_c(flags_register);
+  if (input & 0x1)
+    flags_set_c(flags_register);
+  else
+    flags_reset_c(flags_register);
 
-    return result;
+  return result;
 }
 
-
 uint8_t rrc_uint8_with_flags(uint8_t input, uint8_t *flags_register) {
-    uint8_t result = input & 0x1 ? input >> 1 | 0x80 : input >> 1;
+  uint8_t result = input & 0x1 ? input >> 1 | 0x80 : input >> 1;
 
-    if (result == 0) flags_set_z(flags_register);
-    else flags_reset_z(flags_register);
+  if (result == 0)
+    flags_set_z(flags_register);
+  else
+    flags_reset_z(flags_register);
 
-    flags_reset_n(flags_register);
-    flags_reset_h(flags_register);
+  flags_reset_n(flags_register);
+  flags_reset_h(flags_register);
 
-    if ((input & 0x1) > 0) flags_set_c(flags_register);
-    else flags_reset_c(flags_register);
+  if ((input & 0x1) > 0)
+    flags_set_c(flags_register);
+  else
+    flags_reset_c(flags_register);
 
-    return result;
+  return result;
 }
 
 uint8_t rr_uint8_with_flags(uint8_t input, uint8_t *flags_register) {
-    uint8_t result = flags_is_c(*flags_register) ? input >> 1 | 0x80 : input >> 1;
+  uint8_t result = flags_is_c(*flags_register) ? input >> 1 | 0x80 : input >> 1;
 
-    if (result == 0) flags_set_z(flags_register);
-    else flags_reset_z(flags_register);
+  if (result == 0)
+    flags_set_z(flags_register);
+  else
+    flags_reset_z(flags_register);
 
-    flags_reset_n(flags_register);
-    flags_reset_h(flags_register);
+  flags_reset_n(flags_register);
+  flags_reset_h(flags_register);
 
-    if (input & 0x1) flags_set_c(flags_register);
-    else flags_reset_c(flags_register);
+  if (input & 0x1)
+    flags_set_c(flags_register);
+  else
+    flags_reset_c(flags_register);
 
-    return result;
+  return result;
 }
-
 
 uint8_t rlc_uint8_with_flags(uint8_t input, uint8_t *flags_register) {
-    uint8_t result = input & 0x80 ? input << 1 | 0x1 : input << 1;
+  uint8_t result = input & 0x80 ? input << 1 | 0x1 : input << 1;
 
-    if (result == 0) flags_set_z(flags_register);
-    else flags_reset_z(flags_register);
+  if (result == 0)
+    flags_set_z(flags_register);
+  else
+    flags_reset_z(flags_register);
 
-    flags_reset_n(flags_register);
-    flags_reset_h(flags_register);
+  flags_reset_n(flags_register);
+  flags_reset_h(flags_register);
 
-    if ((input & 0x80) > 0) flags_set_c(flags_register);
-    else flags_reset_c(flags_register);
+  if ((input & 0x80) > 0)
+    flags_set_c(flags_register);
+  else
+    flags_reset_c(flags_register);
 
-    return result;
+  return result;
 }
 
-
 uint8_t rl_uint8_with_flags(uint8_t input, uint8_t *flags_register) {
-    uint8_t result = flags_is_c(*flags_register) ? input << 1 | 0x1 : input << 1;
+  uint8_t result = flags_is_c(*flags_register) ? input << 1 | 0x1 : input << 1;
 
-    if (result == 0) flags_set_z(flags_register);
-    else flags_reset_z(flags_register);
+  if (result == 0)
+    flags_set_z(flags_register);
+  else
+    flags_reset_z(flags_register);
 
-    flags_reset_n(flags_register);
-    flags_reset_h(flags_register);
+  flags_reset_n(flags_register);
+  flags_reset_h(flags_register);
 
-    if (input & 0x80) flags_set_c(flags_register);
-    else flags_reset_c(flags_register);
+  if (input & 0x80)
+    flags_set_c(flags_register);
+  else
+    flags_reset_c(flags_register);
 
-    return result;
+  return result;
 }
 
 uint8_t dec_uint8_with_flags(uint8_t left, uint8_t *flags_register) {
-    uint8_t result = left - 1;
+  uint8_t result = left - 1;
 
-    // Zero result
-    if (result == 0) flags_set_z(flags_register);
-    else flags_reset_z(flags_register);
+  // Zero result
+  if (result == 0)
+    flags_set_z(flags_register);
+  else
+    flags_reset_z(flags_register);
 
-    // Half overflow
-    if (sub_has_half_borrow_uint8(left, 1)) flags_set_h(flags_register);
-    else flags_reset_h(flags_register);
+  // Half overflow
+  if (sub_has_half_borrow_uint8(left, 1))
+    flags_set_h(flags_register);
+  else
+    flags_reset_h(flags_register);
 
-    // Is a subtraction
-    flags_set_n(flags_register);
+  // Is a subtraction
+  flags_set_n(flags_register);
 
-    return (result);
+  return (result);
 }
 
+uint16_t add_uint16_with_flags(uint16_t left, uint16_t right,
+                               uint8_t *flags_register) {
+  uint16_t result = left + right;
 
-uint16_t add_uint16_with_flags(uint16_t left, uint16_t right, uint8_t *flags_register) {
-    uint16_t result = left + right;
+  // Half overflow
+  if (add_has_half_overflow_uint16(left, right))
+    flags_set_h(flags_register);
+  else
+    flags_reset_h(flags_register);
 
-    // Half overflow
-    if (add_has_half_overflow_uint16(left, right)) flags_set_h(flags_register);
-    else flags_reset_h(flags_register);
+  // Full overflow
+  if (add_has_overflow_uint16(left, right))
+    flags_set_c(flags_register);
+  else
+    flags_reset_c(flags_register);
 
-    // Full overflow
-    if (add_has_overflow_uint16(left, right)) flags_set_c(flags_register);
-    else flags_reset_c(flags_register);
+  // Not a subtraction
+  flags_reset_n(flags_register);
 
-    // Not a subtraction
-    flags_reset_n(flags_register);
-
-    return result;
+  return result;
 }
 
+uint8_t add_uint8_with_flags(uint8_t left, uint8_t right,
+                             uint8_t *flags_register) {
+  uint8_t result = left + right;
 
-uint8_t add_uint8_with_flags(uint8_t left, uint8_t right, uint8_t *flags_register) {
-    uint8_t result = left + right;
+  // Zero result
+  if (result == 0)
+    flags_set_z(flags_register);
+  else
+    flags_reset_z(flags_register);
 
-    // Zero result
-    if (result == 0) flags_set_z(flags_register);
-    else flags_reset_z(flags_register);
+  // Half overflow
+  if (add_has_half_overflow_uint8(left, right))
+    flags_set_h(flags_register);
+  else
+    flags_reset_h(flags_register);
 
-    // Half overflow
-    if (add_has_half_overflow_uint8(left, right)) flags_set_h(flags_register);
-    else flags_reset_h(flags_register);
+  // Full overflow
+  if (add_has_overflow_uint8(left, right))
+    flags_set_c(flags_register);
+  else
+    flags_reset_c(flags_register);
 
-    // Full overflow
-    if (add_has_overflow_uint8(left, right)) flags_set_c(flags_register);
-    else flags_reset_c(flags_register);
+  // Not a subtraction
+  flags_reset_n(flags_register);
 
-    // Not a subtraction
-    flags_reset_n(flags_register);
-
-    return result;
+  return result;
 }
 
+uint8_t adc_uint8_with_flags(uint8_t left, uint8_t right,
+                             uint8_t *flags_register) {
+  uint8_t rightWithCarry = flags_is_c(*flags_register) ? right + 1 : right;
+  uint8_t result = left + rightWithCarry;
 
-uint8_t adc_uint8_with_flags(uint8_t left, uint8_t right, uint8_t *flags_register) {
-    uint8_t rightWithCarry = flags_is_c(*flags_register)
-                                 ? right + 1
-                                 : right;
-    uint8_t result = left + rightWithCarry;
+  // Zero result
+  if (result == 0)
+    flags_set_z(flags_register);
+  else
+    flags_reset_z(flags_register);
 
-    // Zero result
-    if (result == 0) flags_set_z(flags_register);
-    else flags_reset_z(flags_register);
+  // Half overflow
+  if (add_has_half_overflow_with_carry_uint8(left, right,
+                                             flags_is_c(*flags_register)))
+    flags_set_h(flags_register);
+  else
+    flags_reset_h(flags_register);
 
-    // Half overflow
-    if (add_has_half_overflow_with_carry_uint8(left, right, flags_is_c(*flags_register))) flags_set_h(flags_register);
-    else flags_reset_h(flags_register);
+  // Full overflow
+  if (add_has_overflow_with_carry_uint8(left, right,
+                                        flags_is_c(*flags_register)))
+    flags_set_c(flags_register);
+  else
+    flags_reset_c(flags_register);
 
-    // Full overflow
-    if (add_has_overflow_with_carry_uint8(left, right, flags_is_c(*flags_register))) flags_set_c(flags_register);
-    else flags_reset_c(flags_register);
+  // Not a subtraction
+  flags_reset_n(flags_register);
 
-    // Not a subtraction
-    flags_reset_n(flags_register);
-
-    return result;
+  return result;
 }
 
+uint8_t sub_uint8_with_flags(uint8_t left, uint8_t right,
+                             uint8_t *flags_register) {
+  uint8_t result = left - right;
 
-uint8_t sub_uint8_with_flags(uint8_t left, uint8_t right, uint8_t *flags_register) {
-    uint8_t result = left - right;
+  // Zero result
+  if (result == 0)
+    flags_set_z(flags_register);
+  else
+    flags_reset_z(flags_register);
 
-    // Zero result
-    if (result == 0) flags_set_z(flags_register);
-    else flags_reset_z(flags_register);
+  // Half overflow
+  if (sub_has_half_borrow_uint8(left, right))
+    flags_set_h(flags_register);
+  else
+    flags_reset_h(flags_register);
 
-    // Half overflow
-    if (sub_has_half_borrow_uint8(left, right)) flags_set_h(flags_register);
-    else flags_reset_h(flags_register);
+  // Full overflow
+  if (right > left)
+    flags_set_c(flags_register);
+  else
+    flags_reset_c(flags_register);
 
-    // Full overflow
-    if (right > left) flags_set_c(flags_register);
-    else flags_reset_c(flags_register);
+  // Is a subtraction
+  flags_set_n(flags_register);
 
-    // Is a subtraction
-    flags_set_n(flags_register);
-
-    return result;
+  return result;
 }
 
+uint8_t sbc_uint8_with_flags(uint8_t left, uint8_t right,
+                             uint8_t *flags_register) {
+  uint8_t rightWithCarry = flags_is_c(*flags_register) ? right + 1 : right;
+  uint8_t result = left - rightWithCarry;
 
-uint8_t sbc_uint8_with_flags(uint8_t left, uint8_t right, uint8_t *flags_register) {
-    uint8_t rightWithCarry = flags_is_c(*flags_register) ? right + 1 : right;
-    uint8_t result = left - rightWithCarry;
+  // Zero result
+  if (result == 0)
+    flags_set_z(flags_register);
+  else
+    flags_reset_z(flags_register);
 
-    // Zero result
-    if (result == 0) flags_set_z(flags_register);
-    else flags_reset_z(flags_register);
+  // Half overflow
+  if (sub_has_half_borrow_with_carry_uint8(left, right,
+                                           flags_is_c(*flags_register)))
+    flags_set_h(flags_register);
+  else
+    flags_reset_h(flags_register);
 
-    // Half overflow
-    if (sub_has_half_borrow_with_carry_uint8(left, right, flags_is_c(*flags_register))) flags_set_h(flags_register);
-    else flags_reset_h(flags_register);
+  // Full overflow
+  if (sub_has_borrow_with_carry_uint8(left, right, flags_is_c(*flags_register)))
+    flags_set_c(flags_register);
+  else
+    flags_reset_c(flags_register);
 
-    // Full overflow
-    if (sub_has_borrow_with_carry_uint8(left, right, flags_is_c(*flags_register))) flags_set_c(flags_register);
-    else flags_reset_c(flags_register);
+  // Is a subtraction
+  flags_set_n(flags_register);
 
-    // Is a subtraction
-    flags_set_n(flags_register);
-
-    return result;
+  return result;
 }
 
 /**
-* Convert twos complement signed int8 to int16, extending sign if negative.
-*/
+ * Convert twos complement signed int8 to int16, extending sign if negative.
+ */
 uint16_t uint8_sign_extend_uint16(uint8_t value) {
-    if (value & 0x80) return (uint16_t) 0xFF00 | (uint16_t) value;
-    return value;
+  if (value & 0x80)
+    return (uint16_t)0xFF00 | (uint16_t)value;
+  return value;
 }
 
 const instruction_t instructions[256] = {
@@ -925,2894 +1006,2989 @@ const instruction_t extended_instructions[256] = {
 };
 
 instruction_result_t instruction_bit_0_a(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.A, 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.A, 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_0_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = reset_with_flags(cpu->registers.A, 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = reset_with_flags(cpu->registers.A, 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_0_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = set_with_flags(cpu->registers.A, 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = set_with_flags(cpu->registers.A, 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_0_b(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.B, 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.B, 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_0_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = reset_with_flags(cpu->registers.B, 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = reset_with_flags(cpu->registers.B, 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_0_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = set_with_flags(cpu->registers.B, 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = set_with_flags(cpu->registers.B, 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_0_c(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.C, 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.C, 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_0_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = reset_with_flags(cpu->registers.C, 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = reset_with_flags(cpu->registers.C, 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_0_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = set_with_flags(cpu->registers.C, 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = set_with_flags(cpu->registers.C, 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_0_d(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.D, 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.D, 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_0_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = reset_with_flags(cpu->registers.D, 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = reset_with_flags(cpu->registers.D, 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_0_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = set_with_flags(cpu->registers.D, 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = set_with_flags(cpu->registers.D, 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_0_e(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.E, 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.E, 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_0_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = reset_with_flags(cpu->registers.E, 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = reset_with_flags(cpu->registers.E, 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_0_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = set_with_flags(cpu->registers.E, 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = set_with_flags(cpu->registers.E, 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_0_f(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.F, 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.F, 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_0_f(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.F = reset_with_flags(cpu->registers.F, 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.F = reset_with_flags(cpu->registers.F, 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_0_f(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.F = set_with_flags(cpu->registers.F, 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.F = set_with_flags(cpu->registers.F, 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_0_h(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.H, 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.H, 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_0_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = reset_with_flags(cpu->registers.H, 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = reset_with_flags(cpu->registers.H, 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_0_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = set_with_flags(cpu->registers.H, 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = set_with_flags(cpu->registers.H, 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_0_l(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.L, 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.L, 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_0_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = reset_with_flags(cpu->registers.L, 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = reset_with_flags(cpu->registers.L, 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_0_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = set_with_flags(cpu->registers.L, 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = set_with_flags(cpu->registers.L, 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_1_a(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.A, 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.A, 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_1_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = reset_with_flags(cpu->registers.A, 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = reset_with_flags(cpu->registers.A, 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_1_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = set_with_flags(cpu->registers.A, 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = set_with_flags(cpu->registers.A, 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_1_b(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.B, 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.B, 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_1_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = reset_with_flags(cpu->registers.B, 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = reset_with_flags(cpu->registers.B, 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_1_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = set_with_flags(cpu->registers.B, 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = set_with_flags(cpu->registers.B, 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_1_c(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.C, 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.C, 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_1_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = reset_with_flags(cpu->registers.C, 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = reset_with_flags(cpu->registers.C, 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_1_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = set_with_flags(cpu->registers.C, 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = set_with_flags(cpu->registers.C, 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_1_d(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.D, 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.D, 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_1_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = reset_with_flags(cpu->registers.D, 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = reset_with_flags(cpu->registers.D, 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_1_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = set_with_flags(cpu->registers.D, 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = set_with_flags(cpu->registers.D, 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_1_e(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.E, 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.E, 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_1_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = reset_with_flags(cpu->registers.E, 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = reset_with_flags(cpu->registers.E, 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_1_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = set_with_flags(cpu->registers.E, 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = set_with_flags(cpu->registers.E, 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_1_f(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.F, 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.F, 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_1_f(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.F = reset_with_flags(cpu->registers.F, 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.F = reset_with_flags(cpu->registers.F, 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_1_f(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.F = set_with_flags(cpu->registers.F, 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.F = set_with_flags(cpu->registers.F, 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_1_h(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.H, 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.H, 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_1_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = reset_with_flags(cpu->registers.H, 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = reset_with_flags(cpu->registers.H, 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_1_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = set_with_flags(cpu->registers.H, 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = set_with_flags(cpu->registers.H, 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_1_l(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.L, 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.L, 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_1_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = reset_with_flags(cpu->registers.L, 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = reset_with_flags(cpu->registers.L, 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_1_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = set_with_flags(cpu->registers.L, 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = set_with_flags(cpu->registers.L, 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_2_a(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.A, 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.A, 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_2_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = reset_with_flags(cpu->registers.A, 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = reset_with_flags(cpu->registers.A, 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_2_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = set_with_flags(cpu->registers.A, 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = set_with_flags(cpu->registers.A, 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_2_b(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.B, 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.B, 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_2_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = reset_with_flags(cpu->registers.B, 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = reset_with_flags(cpu->registers.B, 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_2_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = set_with_flags(cpu->registers.B, 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = set_with_flags(cpu->registers.B, 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_2_c(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.C, 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.C, 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_2_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = reset_with_flags(cpu->registers.C, 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = reset_with_flags(cpu->registers.C, 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_2_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = set_with_flags(cpu->registers.C, 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = set_with_flags(cpu->registers.C, 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_2_d(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.D, 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.D, 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_2_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = reset_with_flags(cpu->registers.D, 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = reset_with_flags(cpu->registers.D, 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_2_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = set_with_flags(cpu->registers.D, 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = set_with_flags(cpu->registers.D, 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_2_e(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.E, 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.E, 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_2_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = reset_with_flags(cpu->registers.E, 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = reset_with_flags(cpu->registers.E, 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_2_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = set_with_flags(cpu->registers.E, 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = set_with_flags(cpu->registers.E, 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_2_f(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.F, 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.F, 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_2_f(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.F = reset_with_flags(cpu->registers.F, 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.F = reset_with_flags(cpu->registers.F, 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_2_f(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.F = set_with_flags(cpu->registers.F, 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.F = set_with_flags(cpu->registers.F, 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_2_h(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.H, 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.H, 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_2_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = reset_with_flags(cpu->registers.H, 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = reset_with_flags(cpu->registers.H, 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_2_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = set_with_flags(cpu->registers.H, 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = set_with_flags(cpu->registers.H, 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_2_l(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.L, 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.L, 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_2_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = reset_with_flags(cpu->registers.L, 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = reset_with_flags(cpu->registers.L, 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_2_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = set_with_flags(cpu->registers.L, 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = set_with_flags(cpu->registers.L, 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_3_a(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.A, 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.A, 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_3_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = reset_with_flags(cpu->registers.A, 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = reset_with_flags(cpu->registers.A, 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_3_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = set_with_flags(cpu->registers.A, 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = set_with_flags(cpu->registers.A, 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_3_b(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.B, 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.B, 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_3_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = reset_with_flags(cpu->registers.B, 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = reset_with_flags(cpu->registers.B, 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_3_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = set_with_flags(cpu->registers.B, 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = set_with_flags(cpu->registers.B, 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_3_c(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.C, 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.C, 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_3_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = reset_with_flags(cpu->registers.C, 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = reset_with_flags(cpu->registers.C, 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_3_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = set_with_flags(cpu->registers.C, 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = set_with_flags(cpu->registers.C, 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_3_d(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.D, 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.D, 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_3_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = reset_with_flags(cpu->registers.D, 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = reset_with_flags(cpu->registers.D, 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_3_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = set_with_flags(cpu->registers.D, 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = set_with_flags(cpu->registers.D, 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_3_e(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.E, 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.E, 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_3_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = reset_with_flags(cpu->registers.E, 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = reset_with_flags(cpu->registers.E, 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_3_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = set_with_flags(cpu->registers.E, 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = set_with_flags(cpu->registers.E, 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_3_f(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.F, 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.F, 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_3_f(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.F = reset_with_flags(cpu->registers.F, 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.F = reset_with_flags(cpu->registers.F, 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_3_f(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.F = set_with_flags(cpu->registers.F, 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.F = set_with_flags(cpu->registers.F, 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_3_h(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.H, 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.H, 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_3_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = reset_with_flags(cpu->registers.H, 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = reset_with_flags(cpu->registers.H, 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_3_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = set_with_flags(cpu->registers.H, 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = set_with_flags(cpu->registers.H, 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_3_l(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.L, 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.L, 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_3_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = reset_with_flags(cpu->registers.L, 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = reset_with_flags(cpu->registers.L, 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_3_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = set_with_flags(cpu->registers.L, 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = set_with_flags(cpu->registers.L, 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_4_a(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.A, 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.A, 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_4_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = reset_with_flags(cpu->registers.A, 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = reset_with_flags(cpu->registers.A, 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_4_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = set_with_flags(cpu->registers.A, 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = set_with_flags(cpu->registers.A, 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_4_b(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.B, 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.B, 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_4_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = reset_with_flags(cpu->registers.B, 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = reset_with_flags(cpu->registers.B, 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_4_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = set_with_flags(cpu->registers.B, 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = set_with_flags(cpu->registers.B, 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_4_c(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.C, 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.C, 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_4_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = reset_with_flags(cpu->registers.C, 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = reset_with_flags(cpu->registers.C, 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_4_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = set_with_flags(cpu->registers.C, 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = set_with_flags(cpu->registers.C, 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_4_d(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.D, 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.D, 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_4_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = reset_with_flags(cpu->registers.D, 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = reset_with_flags(cpu->registers.D, 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_4_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = set_with_flags(cpu->registers.D, 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = set_with_flags(cpu->registers.D, 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_4_e(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.E, 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.E, 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_4_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = reset_with_flags(cpu->registers.E, 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = reset_with_flags(cpu->registers.E, 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_4_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = set_with_flags(cpu->registers.E, 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = set_with_flags(cpu->registers.E, 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_4_f(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.F, 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.F, 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_4_f(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.F = reset_with_flags(cpu->registers.F, 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.F = reset_with_flags(cpu->registers.F, 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_4_f(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.F = set_with_flags(cpu->registers.F, 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.F = set_with_flags(cpu->registers.F, 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_4_h(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.H, 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.H, 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_4_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = reset_with_flags(cpu->registers.H, 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = reset_with_flags(cpu->registers.H, 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_4_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = set_with_flags(cpu->registers.H, 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = set_with_flags(cpu->registers.H, 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_4_l(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.L, 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.L, 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_4_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = reset_with_flags(cpu->registers.L, 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = reset_with_flags(cpu->registers.L, 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_4_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = set_with_flags(cpu->registers.L, 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = set_with_flags(cpu->registers.L, 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_5_a(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.A, 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.A, 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_5_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = reset_with_flags(cpu->registers.A, 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = reset_with_flags(cpu->registers.A, 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_5_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = set_with_flags(cpu->registers.A, 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = set_with_flags(cpu->registers.A, 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_5_b(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.B, 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.B, 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_5_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = reset_with_flags(cpu->registers.B, 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = reset_with_flags(cpu->registers.B, 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_5_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = set_with_flags(cpu->registers.B, 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = set_with_flags(cpu->registers.B, 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_5_c(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.C, 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.C, 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_5_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = reset_with_flags(cpu->registers.C, 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = reset_with_flags(cpu->registers.C, 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_5_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = set_with_flags(cpu->registers.C, 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = set_with_flags(cpu->registers.C, 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_5_d(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.D, 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.D, 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_5_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = reset_with_flags(cpu->registers.D, 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = reset_with_flags(cpu->registers.D, 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_5_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = set_with_flags(cpu->registers.D, 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = set_with_flags(cpu->registers.D, 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_5_e(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.E, 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.E, 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_5_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = reset_with_flags(cpu->registers.E, 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = reset_with_flags(cpu->registers.E, 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_5_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = set_with_flags(cpu->registers.E, 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = set_with_flags(cpu->registers.E, 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_5_f(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.F, 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.F, 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_5_f(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.F = reset_with_flags(cpu->registers.F, 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.F = reset_with_flags(cpu->registers.F, 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_5_f(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.F = set_with_flags(cpu->registers.F, 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.F = set_with_flags(cpu->registers.F, 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_5_h(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.H, 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.H, 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_5_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = reset_with_flags(cpu->registers.H, 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = reset_with_flags(cpu->registers.H, 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_5_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = set_with_flags(cpu->registers.H, 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = set_with_flags(cpu->registers.H, 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_5_l(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.L, 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.L, 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_5_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = reset_with_flags(cpu->registers.L, 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = reset_with_flags(cpu->registers.L, 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_5_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = set_with_flags(cpu->registers.L, 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = set_with_flags(cpu->registers.L, 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_6_a(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.A, 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.A, 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_6_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = reset_with_flags(cpu->registers.A, 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = reset_with_flags(cpu->registers.A, 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_6_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = set_with_flags(cpu->registers.A, 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = set_with_flags(cpu->registers.A, 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_6_b(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.B, 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.B, 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_6_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = reset_with_flags(cpu->registers.B, 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = reset_with_flags(cpu->registers.B, 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_6_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = set_with_flags(cpu->registers.B, 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = set_with_flags(cpu->registers.B, 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_6_c(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.C, 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.C, 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_6_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = reset_with_flags(cpu->registers.C, 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = reset_with_flags(cpu->registers.C, 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_6_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = set_with_flags(cpu->registers.C, 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = set_with_flags(cpu->registers.C, 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_6_d(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.D, 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.D, 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_6_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = reset_with_flags(cpu->registers.D, 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = reset_with_flags(cpu->registers.D, 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_6_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = set_with_flags(cpu->registers.D, 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = set_with_flags(cpu->registers.D, 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_6_e(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.E, 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.E, 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_6_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = reset_with_flags(cpu->registers.E, 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = reset_with_flags(cpu->registers.E, 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_6_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = set_with_flags(cpu->registers.E, 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = set_with_flags(cpu->registers.E, 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_6_f(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.F, 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.F, 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_6_f(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.F = reset_with_flags(cpu->registers.F, 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.F = reset_with_flags(cpu->registers.F, 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_6_f(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.F = set_with_flags(cpu->registers.F, 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.F = set_with_flags(cpu->registers.F, 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_6_h(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.H, 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.H, 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_6_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = reset_with_flags(cpu->registers.H, 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = reset_with_flags(cpu->registers.H, 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_6_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = set_with_flags(cpu->registers.H, 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = set_with_flags(cpu->registers.H, 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_6_l(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.L, 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.L, 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_6_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = reset_with_flags(cpu->registers.L, 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = reset_with_flags(cpu->registers.L, 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_6_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = set_with_flags(cpu->registers.L, 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = set_with_flags(cpu->registers.L, 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_7_a(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.A, 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.A, 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_7_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = reset_with_flags(cpu->registers.A, 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = reset_with_flags(cpu->registers.A, 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_7_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = set_with_flags(cpu->registers.A, 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = set_with_flags(cpu->registers.A, 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_7_b(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.B, 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.B, 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_7_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = reset_with_flags(cpu->registers.B, 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = reset_with_flags(cpu->registers.B, 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_7_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = set_with_flags(cpu->registers.B, 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = set_with_flags(cpu->registers.B, 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_7_c(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.C, 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.C, 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_7_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = reset_with_flags(cpu->registers.C, 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = reset_with_flags(cpu->registers.C, 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_7_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = set_with_flags(cpu->registers.C, 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = set_with_flags(cpu->registers.C, 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_7_d(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.D, 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.D, 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_7_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = reset_with_flags(cpu->registers.D, 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = reset_with_flags(cpu->registers.D, 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_7_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = set_with_flags(cpu->registers.D, 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = set_with_flags(cpu->registers.D, 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_7_e(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.E, 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.E, 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_7_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = reset_with_flags(cpu->registers.E, 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = reset_with_flags(cpu->registers.E, 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_7_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = set_with_flags(cpu->registers.E, 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = set_with_flags(cpu->registers.E, 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_7_f(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.F, 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.F, 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_7_f(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.F = reset_with_flags(cpu->registers.F, 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.F = reset_with_flags(cpu->registers.F, 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_7_f(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.F = set_with_flags(cpu->registers.F, 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.F = set_with_flags(cpu->registers.F, 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_7_h(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.H, 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.H, 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_7_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = reset_with_flags(cpu->registers.H, 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = reset_with_flags(cpu->registers.H, 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_7_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = set_with_flags(cpu->registers.H, 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = set_with_flags(cpu->registers.H, 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_bit_7_l(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(cpu->registers.L, 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  bit_with_flags(cpu->registers.L, 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_res_7_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = reset_with_flags(cpu->registers.L, 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = reset_with_flags(cpu->registers.L, 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_set_7_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = set_with_flags(cpu->registers.L, 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = set_with_flags(cpu->registers.L, 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
-
 uint16_t read_immediate_u16(cpu_t *cpu, bus_t *bus) {
-    return bus_read(bus, cpu->registers.PC++) | bus_read(bus, cpu->registers.PC++) << 8;
+  return bus_read(bus, cpu->registers.PC++) | bus_read(bus, cpu->registers.PC++)
+                                                  << 8;
 }
 
 uint8_t read_immediate_u8(cpu_t *cpu, bus_t *bus) {
-    return bus_read(bus, cpu->registers.PC++);
+  return bus_read(bus, cpu->registers.PC++);
 }
 
 instruction_result_t instruction_nop(cpu_t *cpu, bus_t *bus) {
-    return (instruction_result_t){.cycle_count = 1};
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_bc_n16(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.BC = read_immediate_u16(cpu, bus);
-    return (instruction_result_t){.cycle_count = 3};
+  cpu->registers.BC = read_immediate_u16(cpu, bus);
+  return (instruction_result_t){.cycle_count = 3};
 }
 
 instruction_result_t instruction_ld_deref_bc_a(cpu_t *cpu, bus_t *bus) {
-    bus_write(bus, cpu->registers.BC, cpu->registers.A);
-    return (instruction_result_t){.cycle_count = 2};
+  bus_write(bus, cpu->registers.BC, cpu->registers.A);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_inc_bc(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.BC++;
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.BC++;
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_inc_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = inc_uint8_with_flags(cpu->registers.B, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.B = inc_uint8_with_flags(cpu->registers.B, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_dec_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = dec_uint8_with_flags(cpu->registers.B, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.B = dec_uint8_with_flags(cpu->registers.B, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_b_n8(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = read_immediate_u8(cpu, bus);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = read_immediate_u8(cpu, bus);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rlca(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = rlc_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
-    flags_reset_z(&cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = rlc_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
+  flags_reset_z(&cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_deref_a16_sp(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = read_immediate_u16(cpu, bus);
-    bus_write(bus, address, cpu->registers.SP & 0xFF);
-    bus_write(bus, address + 1, cpu->registers.SP >> 8);
-    return (instruction_result_t){.cycle_count = 5};
+  uint16_t address = read_immediate_u16(cpu, bus);
+  bus_write(bus, address, cpu->registers.SP & 0xFF);
+  bus_write(bus, address + 1, cpu->registers.SP >> 8);
+  return (instruction_result_t){.cycle_count = 5};
 }
 
 instruction_result_t instruction_add_hl_bc(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.HL = add_uint16_with_flags(cpu->registers.HL, cpu->registers.BC, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.HL = add_uint16_with_flags(
+      cpu->registers.HL, cpu->registers.BC, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_ld_a_deref_bc(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = bus_read(bus, cpu->registers.BC);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = bus_read(bus, cpu->registers.BC);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_dec_bc(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.BC--;
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.BC--;
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_inc_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = inc_uint8_with_flags(cpu->registers.C, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.C = inc_uint8_with_flags(cpu->registers.C, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_dec_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = dec_uint8_with_flags(cpu->registers.C, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.C = dec_uint8_with_flags(cpu->registers.C, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_c_n8(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = read_immediate_u8(cpu, bus);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = read_immediate_u8(cpu, bus);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rrca(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = rrc_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
-    flags_reset_z(&cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = rrc_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
+  flags_reset_z(&cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_stop_n8(cpu_t *cpu, bus_t *bus) {
-    assert(0 && "0x10\" / \"instruction_stop_n8\" not implemented.");
+  assert(0 && "0x10\" / \"instruction_stop_n8\" not implemented.");
 }
 
 instruction_result_t instruction_ld_de_n16(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.DE = read_immediate_u16(cpu, bus);
-    return (instruction_result_t){.cycle_count = 3};
+  cpu->registers.DE = read_immediate_u16(cpu, bus);
+  return (instruction_result_t){.cycle_count = 3};
 }
 
 instruction_result_t instruction_ld_deref_de_a(cpu_t *cpu, bus_t *bus) {
-    bus_write(bus, cpu->registers.DE, cpu->registers.A);
-    return (instruction_result_t){.cycle_count = 2};
+  bus_write(bus, cpu->registers.DE, cpu->registers.A);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_inc_de(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.DE++;
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.DE++;
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_inc_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = inc_uint8_with_flags(cpu->registers.D, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.D = inc_uint8_with_flags(cpu->registers.D, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_dec_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = dec_uint8_with_flags(cpu->registers.D, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.D = dec_uint8_with_flags(cpu->registers.D, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_d_n8(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = read_immediate_u8(cpu, bus);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = read_immediate_u8(cpu, bus);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rla(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = rl_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
-    flags_reset_z(&cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = rl_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
+  flags_reset_z(&cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_jr_e8(cpu_t *cpu, bus_t *bus) {
-    uint8_t signed_offset = read_immediate_u8(cpu, bus);
-    cpu->registers.PC += uint8_sign_extend_uint16(signed_offset);
-    return (instruction_result_t){.cycle_count = 3};
+  uint8_t signed_offset = read_immediate_u8(cpu, bus);
+  cpu->registers.PC += uint8_sign_extend_uint16(signed_offset);
+  return (instruction_result_t){.cycle_count = 3};
 }
 
 instruction_result_t instruction_add_hl_de(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.HL = add_uint16_with_flags(cpu->registers.HL, cpu->registers.DE, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.HL = add_uint16_with_flags(
+      cpu->registers.HL, cpu->registers.DE, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_ld_a_deref_de(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = bus_read(bus, cpu->registers.DE);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = bus_read(bus, cpu->registers.DE);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_dec_de(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.DE--;
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.DE--;
+  return (instruction_result_t){.cycle_count = 2};
 }
-
 
 instruction_result_t instruction_inc_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = inc_uint8_with_flags(cpu->registers.E, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.E = inc_uint8_with_flags(cpu->registers.E, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
-
 instruction_result_t instruction_dec_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = dec_uint8_with_flags(cpu->registers.E, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.E = dec_uint8_with_flags(cpu->registers.E, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_e_n8(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = read_immediate_u8(cpu, bus);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = read_immediate_u8(cpu, bus);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rra(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = rr_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
-    flags_reset_z(&cpu->registers.F);
+  cpu->registers.A = rr_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
+  flags_reset_z(&cpu->registers.F);
 
-    return (instruction_result_t){.cycle_count = 1};
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_jr_nz_e8(cpu_t *cpu, bus_t *bus) {
-    uint8_t signed_offset = read_immediate_u8(cpu, bus);
+  uint8_t signed_offset = read_immediate_u8(cpu, bus);
 
-    if (!flags_is_z(cpu->registers.F)) {
-        cpu->registers.PC += uint8_sign_extend_uint16(signed_offset);
-        return (instruction_result_t){.cycle_count = 3};
-    }
+  if (!flags_is_z(cpu->registers.F)) {
+    cpu->registers.PC += uint8_sign_extend_uint16(signed_offset);
+    return (instruction_result_t){.cycle_count = 3};
+  }
 
-    return (instruction_result_t){.cycle_count = 2};
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_ld_hl_n16(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.HL = read_immediate_u16(cpu, bus);
-    return (instruction_result_t){.cycle_count = 3};
+  cpu->registers.HL = read_immediate_u16(cpu, bus);
+  return (instruction_result_t){.cycle_count = 3};
 }
 
 instruction_result_t instruction_ld_inc_deref_hl_a(cpu_t *cpu, bus_t *bus) {
-    bus_write(bus, cpu->registers.HL++, cpu->registers.A);
-    return (instruction_result_t){.cycle_count = 2};
+  bus_write(bus, cpu->registers.HL++, cpu->registers.A);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_inc_hl(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.HL++;
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.HL++;
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_inc_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = inc_uint8_with_flags(cpu->registers.H, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.H = inc_uint8_with_flags(cpu->registers.H, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_dec_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = dec_uint8_with_flags(cpu->registers.H, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.H = dec_uint8_with_flags(cpu->registers.H, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_h_n8(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = read_immediate_u8(cpu, bus);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = read_immediate_u8(cpu, bus);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_daa(cpu_t *cpu, bus_t *bus) {
-    int tmp = cpu->registers.A;
+  int tmp = cpu->registers.A;
 
-    if (!(cpu->registers.F & N_BIT)) {
-        if ((cpu->registers.F & H_BIT) || (tmp & 0x0F) > 9)
-            tmp += 6;
-        if ((cpu->registers.F & C_BIT) || tmp > 0x9F)
-            tmp += 0x60;
-    } else {
-        if (cpu->registers.F & H_BIT) {
-            tmp -= 6;
-            if (!(cpu->registers.F & C_BIT))
-                tmp &= 0xFF;
-        }
-        if (cpu->registers.F & C_BIT)
-            tmp -= 0x60;
+  if (!(cpu->registers.F & N_BIT)) {
+    if ((cpu->registers.F & H_BIT) || (tmp & 0x0F) > 9)
+      tmp += 6;
+    if ((cpu->registers.F & C_BIT) || tmp > 0x9F)
+      tmp += 0x60;
+  } else {
+    if (cpu->registers.F & H_BIT) {
+      tmp -= 6;
+      if (!(cpu->registers.F & C_BIT))
+        tmp &= 0xFF;
     }
-    cpu->registers.F &= ~(H_BIT | Z_BIT);
-    if (tmp & 0x100)
-        cpu->registers.F |= C_BIT;
+    if (cpu->registers.F & C_BIT)
+      tmp -= 0x60;
+  }
+  cpu->registers.F &= ~(H_BIT | Z_BIT);
+  if (tmp & 0x100)
+    cpu->registers.F |= C_BIT;
 
-    cpu->registers.A = tmp & 0xFF;
-    if (!cpu->registers.A)
-        cpu->registers.F |= Z_BIT;
+  cpu->registers.A = tmp & 0xFF;
+  if (!cpu->registers.A)
+    cpu->registers.F |= Z_BIT;
 
-    return (instruction_result_t){.cycle_count = 1};
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_jr_z_e8(cpu_t *cpu, bus_t *bus) {
-    uint8_t signed_offset = read_immediate_u8(cpu, bus);
+  uint8_t signed_offset = read_immediate_u8(cpu, bus);
 
-    if (flags_is_z(cpu->registers.F)) {
-        cpu->registers.PC += uint8_sign_extend_uint16(signed_offset);
-        return (instruction_result_t){.cycle_count = 3};
-    }
-    return (instruction_result_t){.cycle_count = 2};
+  if (flags_is_z(cpu->registers.F)) {
+    cpu->registers.PC += uint8_sign_extend_uint16(signed_offset);
+    return (instruction_result_t){.cycle_count = 3};
+  }
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_add_hl_hl(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.HL = add_uint16_with_flags(cpu->registers.HL, cpu->registers.HL, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.HL = add_uint16_with_flags(
+      cpu->registers.HL, cpu->registers.HL, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_ld_a_inc_deref_hl(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = bus_read(bus, cpu->registers.HL++);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = bus_read(bus, cpu->registers.HL++);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_dec_hl(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.HL--;
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.HL--;
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_inc_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = inc_uint8_with_flags(cpu->registers.L, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.L = inc_uint8_with_flags(cpu->registers.L, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_dec_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = dec_uint8_with_flags(cpu->registers.L, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.L = dec_uint8_with_flags(cpu->registers.L, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_l_n8(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = read_immediate_u8(cpu, bus);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = read_immediate_u8(cpu, bus);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_cpl(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = ~cpu->registers.A;
-    flags_set_h(&cpu->registers.F);
-    flags_set_n(&cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = ~cpu->registers.A;
+  flags_set_h(&cpu->registers.F);
+  flags_set_n(&cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_jr_nc_e8(cpu_t *cpu, bus_t *bus) {
-    uint8_t signed_offset = read_immediate_u8(cpu, bus);
+  uint8_t signed_offset = read_immediate_u8(cpu, bus);
 
-    if (!flags_is_c(cpu->registers.F)) {
-        cpu->registers.PC += uint8_sign_extend_uint16(signed_offset);
-        return (instruction_result_t){.cycle_count = 3};
-    }
+  if (!flags_is_c(cpu->registers.F)) {
+    cpu->registers.PC += uint8_sign_extend_uint16(signed_offset);
+    return (instruction_result_t){.cycle_count = 3};
+  }
 
-    return (instruction_result_t){.cycle_count = 2};
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_ld_sp_n16(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.SP = read_immediate_u16(cpu, bus);
-    return (instruction_result_t){.cycle_count = 3};
+  cpu->registers.SP = read_immediate_u16(cpu, bus);
+  return (instruction_result_t){.cycle_count = 3};
 }
 
 instruction_result_t instruction_ld_dec_deref_hl_a(cpu_t *cpu, bus_t *bus) {
-    bus_write(bus, cpu->registers.HL--, cpu->registers.A);
-    return (instruction_result_t){.cycle_count = 2};
+  bus_write(bus, cpu->registers.HL--, cpu->registers.A);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_inc_sp(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.SP++;
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.SP++;
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_inc_deref_hl(cpu_t *cpu, bus_t *bus) {
-    bus_write(bus, cpu->registers.HL, inc_uint8_with_flags(bus_read(bus, cpu->registers.HL), &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 3};
+  bus_write(bus, cpu->registers.HL,
+            inc_uint8_with_flags(bus_read(bus, cpu->registers.HL),
+                                 &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 3};
 }
 
 instruction_result_t instruction_dec_deref_hl(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = cpu->registers.HL;
-    bus_write(bus, address, dec_uint8_with_flags(bus_read(bus, cpu->registers.HL), &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 3};
+  uint16_t address = cpu->registers.HL;
+  bus_write(bus, address,
+            dec_uint8_with_flags(bus_read(bus, cpu->registers.HL),
+                                 &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 3};
 }
 
 instruction_result_t instruction_ld_deref_hl_n8(cpu_t *cpu, bus_t *bus) {
-    bus_write(bus, cpu->registers.HL, read_immediate_u8(cpu, bus));
-    return (instruction_result_t){.cycle_count = 3};
+  bus_write(bus, cpu->registers.HL, read_immediate_u8(cpu, bus));
+  return (instruction_result_t){.cycle_count = 3};
 }
 
 instruction_result_t instruction_scf(cpu_t *cpu, bus_t *bus) {
-    flags_reset_n(&cpu->registers.F);
-    flags_reset_h(&cpu->registers.F);
-    flags_set_c(&cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  flags_reset_n(&cpu->registers.F);
+  flags_reset_h(&cpu->registers.F);
+  flags_set_c(&cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_jr_c_e8(cpu_t *cpu, bus_t *bus) {
-    uint8_t signed_offset = read_immediate_u8(cpu, bus);
+  uint8_t signed_offset = read_immediate_u8(cpu, bus);
 
-    if (flags_is_c(cpu->registers.F)) {
-        cpu->registers.PC += uint8_sign_extend_uint16(signed_offset);
-        return (instruction_result_t){.cycle_count = 3};
-    }
+  if (flags_is_c(cpu->registers.F)) {
+    cpu->registers.PC += uint8_sign_extend_uint16(signed_offset);
+    return (instruction_result_t){.cycle_count = 3};
+  }
 
-    return (instruction_result_t){.cycle_count = 2};
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_add_hl_sp(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.HL = add_uint16_with_flags(cpu->registers.HL, cpu->registers.SP, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.HL = add_uint16_with_flags(
+      cpu->registers.HL, cpu->registers.SP, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_ld_a_dec_deref_hl(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = bus_read(bus, cpu->registers.HL--);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = bus_read(bus, cpu->registers.HL--);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_dec_sp(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.SP--;
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.SP--;
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_inc_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = inc_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = inc_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_dec_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = dec_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = dec_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_a_n8(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = read_immediate_u8(cpu, bus);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = read_immediate_u8(cpu, bus);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_ccf(cpu_t *cpu, bus_t *bus) {
-    flags_reset_n(&cpu->registers.F);
-    flags_reset_h(&cpu->registers.F);
+  flags_reset_n(&cpu->registers.F);
+  flags_reset_h(&cpu->registers.F);
 
-    if (flags_is_c(cpu->registers.F)) flags_reset_c(&cpu->registers.F);
-    else flags_set_c(&cpu->registers.F);
+  if (flags_is_c(cpu->registers.F))
+    flags_reset_c(&cpu->registers.F);
+  else
+    flags_set_c(&cpu->registers.F);
 
-    return (instruction_result_t){.cycle_count = 1};
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_b_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = cpu->registers.B;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.B = cpu->registers.B;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_b_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = cpu->registers.C;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.B = cpu->registers.C;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_b_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = cpu->registers.D;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.B = cpu->registers.D;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_b_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = cpu->registers.E;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.B = cpu->registers.E;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_b_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = cpu->registers.H;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.B = cpu->registers.H;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_b_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = cpu->registers.L;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.B = cpu->registers.L;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_b_deref_hl(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = bus_read(bus, cpu->registers.HL);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = bus_read(bus, cpu->registers.HL);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_ld_b_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = cpu->registers.A;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.B = cpu->registers.A;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_c_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = cpu->registers.B;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.C = cpu->registers.B;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_c_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = cpu->registers.C;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.C = cpu->registers.C;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_c_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = cpu->registers.D;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.C = cpu->registers.D;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_c_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = cpu->registers.E;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.C = cpu->registers.E;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_c_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = cpu->registers.H;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.C = cpu->registers.H;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_c_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = cpu->registers.L;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.C = cpu->registers.L;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_c_deref_hl(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = bus_read(bus, cpu->registers.HL);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = bus_read(bus, cpu->registers.HL);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_ld_c_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = cpu->registers.A;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.C = cpu->registers.A;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_d_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = cpu->registers.B;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.D = cpu->registers.B;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_d_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = cpu->registers.C;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.D = cpu->registers.C;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_d_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = cpu->registers.D;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.D = cpu->registers.D;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_d_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = cpu->registers.E;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.D = cpu->registers.E;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_d_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = cpu->registers.H;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.D = cpu->registers.H;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_d_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = cpu->registers.L;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.D = cpu->registers.L;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_d_deref_hl(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = bus_read(bus, cpu->registers.HL);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = bus_read(bus, cpu->registers.HL);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_ld_d_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = cpu->registers.A;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.D = cpu->registers.A;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_e_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = cpu->registers.B;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.E = cpu->registers.B;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_e_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = cpu->registers.C;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.E = cpu->registers.C;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_e_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = cpu->registers.D;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.E = cpu->registers.D;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_e_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = cpu->registers.E;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.E = cpu->registers.E;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_e_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = cpu->registers.H;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.E = cpu->registers.H;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_e_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = cpu->registers.L;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.E = cpu->registers.L;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_e_deref_hl(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = bus_read(bus, cpu->registers.HL);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = bus_read(bus, cpu->registers.HL);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_ld_e_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = cpu->registers.A;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.E = cpu->registers.A;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_h_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = cpu->registers.B;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.H = cpu->registers.B;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_h_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = cpu->registers.C;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.H = cpu->registers.C;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_h_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = cpu->registers.D;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.H = cpu->registers.D;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_h_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = cpu->registers.E;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.H = cpu->registers.E;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_h_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = cpu->registers.H;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.H = cpu->registers.H;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_h_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = cpu->registers.L;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.H = cpu->registers.L;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_h_deref_hl(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = bus_read(bus, cpu->registers.HL);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = bus_read(bus, cpu->registers.HL);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_ld_h_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = cpu->registers.A;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.H = cpu->registers.A;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_l_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = cpu->registers.B;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.L = cpu->registers.B;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_l_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = cpu->registers.C;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.L = cpu->registers.C;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_l_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = cpu->registers.D;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.L = cpu->registers.D;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_l_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = cpu->registers.E;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.L = cpu->registers.E;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_l_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = cpu->registers.H;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.L = cpu->registers.H;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_l_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = cpu->registers.L;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.L = cpu->registers.L;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_l_deref_hl(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = bus_read(bus, cpu->registers.HL);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = bus_read(bus, cpu->registers.HL);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_ld_l_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = cpu->registers.A;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.L = cpu->registers.A;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_deref_hl_b(cpu_t *cpu, bus_t *bus) {
-    bus_write(bus, cpu->registers.HL, cpu->registers.B);
-    return (instruction_result_t){.cycle_count = 2};
+  bus_write(bus, cpu->registers.HL, cpu->registers.B);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_ld_deref_hl_c(cpu_t *cpu, bus_t *bus) {
-    bus_write(bus, cpu->registers.HL, cpu->registers.C);
-    return (instruction_result_t){.cycle_count = 2};
+  bus_write(bus, cpu->registers.HL, cpu->registers.C);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_ld_deref_hl_d(cpu_t *cpu, bus_t *bus) {
-    bus_write(bus, cpu->registers.HL, cpu->registers.D);
-    return (instruction_result_t){.cycle_count = 2};
+  bus_write(bus, cpu->registers.HL, cpu->registers.D);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_ld_deref_hl_e(cpu_t *cpu, bus_t *bus) {
-    bus_write(bus, cpu->registers.HL, cpu->registers.E);
-    return (instruction_result_t){.cycle_count = 2};
+  bus_write(bus, cpu->registers.HL, cpu->registers.E);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_ld_deref_hl_h(cpu_t *cpu, bus_t *bus) {
-    bus_write(bus, cpu->registers.HL, cpu->registers.H);
-    return (instruction_result_t){.cycle_count = 2};
+  bus_write(bus, cpu->registers.HL, cpu->registers.H);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_ld_deref_hl_l(cpu_t *cpu, bus_t *bus) {
-    bus_write(bus, cpu->registers.HL, cpu->registers.L);
-    return (instruction_result_t){.cycle_count = 2};
+  bus_write(bus, cpu->registers.HL, cpu->registers.L);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_halt(cpu_t *cpu, bus_t *bus) {
-    cpu->halted = 1;
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->halted = 1;
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_ld_deref_hl_a(cpu_t *cpu, bus_t *bus) {
-    bus_write(bus, cpu->registers.HL, cpu->registers.A);
-    return (instruction_result_t){.cycle_count = 2};
+  bus_write(bus, cpu->registers.HL, cpu->registers.A);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_ld_a_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = cpu->registers.B;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = cpu->registers.B;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_a_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = cpu->registers.C;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = cpu->registers.C;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_a_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = cpu->registers.D;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = cpu->registers.D;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_a_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = cpu->registers.E;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = cpu->registers.E;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_a_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = cpu->registers.H;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = cpu->registers.H;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_a_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = cpu->registers.L;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = cpu->registers.L;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_a_deref_hl(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = bus_read(bus, cpu->registers.HL);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = bus_read(bus, cpu->registers.HL);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_ld_a_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = cpu->registers.A;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = cpu->registers.A;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_add_a_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = add_uint8_with_flags(cpu->registers.A, cpu->registers.B, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = add_uint8_with_flags(cpu->registers.A, cpu->registers.B,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_add_a_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = add_uint8_with_flags(cpu->registers.A, cpu->registers.C, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = add_uint8_with_flags(cpu->registers.A, cpu->registers.C,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_add_a_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = add_uint8_with_flags(cpu->registers.A, cpu->registers.D, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = add_uint8_with_flags(cpu->registers.A, cpu->registers.D,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_add_a_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = add_uint8_with_flags(cpu->registers.A, cpu->registers.E, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = add_uint8_with_flags(cpu->registers.A, cpu->registers.E,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_add_a_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = add_uint8_with_flags(cpu->registers.A, cpu->registers.H, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = add_uint8_with_flags(cpu->registers.A, cpu->registers.H,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_add_a_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = add_uint8_with_flags(cpu->registers.A, cpu->registers.L, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = add_uint8_with_flags(cpu->registers.A, cpu->registers.L,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_add_a_deref_hl(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = add_uint8_with_flags(cpu->registers.A, bus_read(bus, cpu->registers.HL), &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = add_uint8_with_flags(
+      cpu->registers.A, bus_read(bus, cpu->registers.HL), &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_add_a_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = add_uint8_with_flags(cpu->registers.A, cpu->registers.A, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = add_uint8_with_flags(cpu->registers.A, cpu->registers.A,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_adc_a_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = adc_uint8_with_flags(cpu->registers.A, cpu->registers.B, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = adc_uint8_with_flags(cpu->registers.A, cpu->registers.B,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_adc_a_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = adc_uint8_with_flags(cpu->registers.A, cpu->registers.C, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = adc_uint8_with_flags(cpu->registers.A, cpu->registers.C,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_adc_a_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = adc_uint8_with_flags(cpu->registers.A, cpu->registers.D, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = adc_uint8_with_flags(cpu->registers.A, cpu->registers.D,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_adc_a_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = adc_uint8_with_flags(cpu->registers.A, cpu->registers.E, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = adc_uint8_with_flags(cpu->registers.A, cpu->registers.E,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_adc_a_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = adc_uint8_with_flags(cpu->registers.A, cpu->registers.H, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = adc_uint8_with_flags(cpu->registers.A, cpu->registers.H,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_adc_a_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = adc_uint8_with_flags(cpu->registers.A, cpu->registers.L, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = adc_uint8_with_flags(cpu->registers.A, cpu->registers.L,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_adc_a_deref_hl(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = adc_uint8_with_flags(cpu->registers.A, bus_read(bus, cpu->registers.HL), &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = adc_uint8_with_flags(
+      cpu->registers.A, bus_read(bus, cpu->registers.HL), &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_adc_a_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = adc_uint8_with_flags(cpu->registers.A, cpu->registers.A, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = adc_uint8_with_flags(cpu->registers.A, cpu->registers.A,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_sub_a_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = sub_uint8_with_flags(cpu->registers.A, cpu->registers.B, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = sub_uint8_with_flags(cpu->registers.A, cpu->registers.B,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_sub_a_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = sub_uint8_with_flags(cpu->registers.A, cpu->registers.C, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = sub_uint8_with_flags(cpu->registers.A, cpu->registers.C,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_sub_a_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = sub_uint8_with_flags(cpu->registers.A, cpu->registers.D, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = sub_uint8_with_flags(cpu->registers.A, cpu->registers.D,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_sub_a_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = sub_uint8_with_flags(cpu->registers.A, cpu->registers.E, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = sub_uint8_with_flags(cpu->registers.A, cpu->registers.E,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_sub_a_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = sub_uint8_with_flags(cpu->registers.A, cpu->registers.H, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};;
+  cpu->registers.A = sub_uint8_with_flags(cpu->registers.A, cpu->registers.H,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
+  ;
 }
 
 instruction_result_t instruction_sub_a_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = sub_uint8_with_flags(cpu->registers.A, cpu->registers.L, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = sub_uint8_with_flags(cpu->registers.A, cpu->registers.L,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_sub_a_deref_hl(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = sub_uint8_with_flags(cpu->registers.A, bus_read(bus, cpu->registers.HL), &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = sub_uint8_with_flags(
+      cpu->registers.A, bus_read(bus, cpu->registers.HL), &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_sub_a_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = sub_uint8_with_flags(cpu->registers.A, cpu->registers.A, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = sub_uint8_with_flags(cpu->registers.A, cpu->registers.A,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_sbc_a_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = sbc_uint8_with_flags(cpu->registers.A, cpu->registers.B, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = sbc_uint8_with_flags(cpu->registers.A, cpu->registers.B,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_sbc_a_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = sbc_uint8_with_flags(cpu->registers.A, cpu->registers.C, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = sbc_uint8_with_flags(cpu->registers.A, cpu->registers.C,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_sbc_a_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = sbc_uint8_with_flags(cpu->registers.A, cpu->registers.D, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};;
+  cpu->registers.A = sbc_uint8_with_flags(cpu->registers.A, cpu->registers.D,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
+  ;
 }
 
 instruction_result_t instruction_sbc_a_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = sbc_uint8_with_flags(cpu->registers.A, cpu->registers.E, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};;
+  cpu->registers.A = sbc_uint8_with_flags(cpu->registers.A, cpu->registers.E,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
+  ;
 }
 
 instruction_result_t instruction_sbc_a_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = sbc_uint8_with_flags(cpu->registers.A, cpu->registers.H, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = sbc_uint8_with_flags(cpu->registers.A, cpu->registers.H,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_sbc_a_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = sbc_uint8_with_flags(cpu->registers.A, cpu->registers.L, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = sbc_uint8_with_flags(cpu->registers.A, cpu->registers.L,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_sbc_a_deref_hl(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = sbc_uint8_with_flags(cpu->registers.A, bus_read(bus, cpu->registers.HL), &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = sbc_uint8_with_flags(
+      cpu->registers.A, bus_read(bus, cpu->registers.HL), &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_sbc_a_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = sbc_uint8_with_flags(cpu->registers.A, cpu->registers.A, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = sbc_uint8_with_flags(cpu->registers.A, cpu->registers.A,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_and_a_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = and_uint8_with_flags(cpu->registers.A, cpu->registers.B, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = and_uint8_with_flags(cpu->registers.A, cpu->registers.B,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_and_a_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = and_uint8_with_flags(cpu->registers.A, cpu->registers.C, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = and_uint8_with_flags(cpu->registers.A, cpu->registers.C,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_and_a_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = and_uint8_with_flags(cpu->registers.A, cpu->registers.D, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = and_uint8_with_flags(cpu->registers.A, cpu->registers.D,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_and_a_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = and_uint8_with_flags(cpu->registers.A, cpu->registers.E, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = and_uint8_with_flags(cpu->registers.A, cpu->registers.E,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_and_a_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = and_uint8_with_flags(cpu->registers.A, cpu->registers.H, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = and_uint8_with_flags(cpu->registers.A, cpu->registers.H,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_and_a_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = and_uint8_with_flags(cpu->registers.A, cpu->registers.L, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = and_uint8_with_flags(cpu->registers.A, cpu->registers.L,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_and_a_deref_hl(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = and_uint8_with_flags(cpu->registers.A, bus_read(bus, cpu->registers.HL), &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = and_uint8_with_flags(
+      cpu->registers.A, bus_read(bus, cpu->registers.HL), &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_and_a_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = and_uint8_with_flags(cpu->registers.A, cpu->registers.A, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = and_uint8_with_flags(cpu->registers.A, cpu->registers.A,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_xor_a_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = xor_uint8_with_flags(cpu->registers.A, cpu->registers.B, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = xor_uint8_with_flags(cpu->registers.A, cpu->registers.B,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_xor_a_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = xor_uint8_with_flags(cpu->registers.A, cpu->registers.C, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = xor_uint8_with_flags(cpu->registers.A, cpu->registers.C,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_xor_a_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = xor_uint8_with_flags(cpu->registers.A, cpu->registers.D, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = xor_uint8_with_flags(cpu->registers.A, cpu->registers.D,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_xor_a_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = xor_uint8_with_flags(cpu->registers.A, cpu->registers.E, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = xor_uint8_with_flags(cpu->registers.A, cpu->registers.E,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_xor_a_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = xor_uint8_with_flags(cpu->registers.A, cpu->registers.H, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = xor_uint8_with_flags(cpu->registers.A, cpu->registers.H,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_xor_a_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = xor_uint8_with_flags(cpu->registers.A, cpu->registers.L, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = xor_uint8_with_flags(cpu->registers.A, cpu->registers.L,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_xor_a_deref_hl(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = xor_uint8_with_flags(cpu->registers.A, bus_read(bus, cpu->registers.HL), &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = xor_uint8_with_flags(
+      cpu->registers.A, bus_read(bus, cpu->registers.HL), &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_xor_a_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = xor_uint8_with_flags(cpu->registers.A, cpu->registers.A, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = xor_uint8_with_flags(cpu->registers.A, cpu->registers.A,
+                                          &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_or_a_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = or_uint8_with_flags(cpu->registers.A, cpu->registers.B, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = or_uint8_with_flags(cpu->registers.A, cpu->registers.B,
+                                         &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_or_a_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = or_uint8_with_flags(cpu->registers.A, cpu->registers.C, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = or_uint8_with_flags(cpu->registers.A, cpu->registers.C,
+                                         &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_or_a_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = or_uint8_with_flags(cpu->registers.A, cpu->registers.D, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = or_uint8_with_flags(cpu->registers.A, cpu->registers.D,
+                                         &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_or_a_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = or_uint8_with_flags(cpu->registers.A, cpu->registers.E, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = or_uint8_with_flags(cpu->registers.A, cpu->registers.E,
+                                         &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_or_a_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = or_uint8_with_flags(cpu->registers.A, cpu->registers.H, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = or_uint8_with_flags(cpu->registers.A, cpu->registers.H,
+                                         &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_or_a_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = or_uint8_with_flags(cpu->registers.A, cpu->registers.L, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = or_uint8_with_flags(cpu->registers.A, cpu->registers.L,
+                                         &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_or_a_deref_hl(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = or_uint8_with_flags(cpu->registers.A, bus_read(bus, cpu->registers.HL), &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = or_uint8_with_flags(
+      cpu->registers.A, bus_read(bus, cpu->registers.HL), &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_or_a_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = or_uint8_with_flags(cpu->registers.A, cpu->registers.A, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = or_uint8_with_flags(cpu->registers.A, cpu->registers.A,
+                                         &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_cp_a_b(cpu_t *cpu, bus_t *bus) {
-    sub_uint8_with_flags(cpu->registers.A, cpu->registers.B, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  sub_uint8_with_flags(cpu->registers.A, cpu->registers.B, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_cp_a_c(cpu_t *cpu, bus_t *bus) {
-    sub_uint8_with_flags(cpu->registers.A, cpu->registers.C, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  sub_uint8_with_flags(cpu->registers.A, cpu->registers.C, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_cp_a_d(cpu_t *cpu, bus_t *bus) {
-    sub_uint8_with_flags(cpu->registers.A, cpu->registers.D, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  sub_uint8_with_flags(cpu->registers.A, cpu->registers.D, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_cp_a_e(cpu_t *cpu, bus_t *bus) {
-    sub_uint8_with_flags(cpu->registers.A, cpu->registers.E, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  sub_uint8_with_flags(cpu->registers.A, cpu->registers.E, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_cp_a_h(cpu_t *cpu, bus_t *bus) {
-    sub_uint8_with_flags(cpu->registers.A, cpu->registers.H, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  sub_uint8_with_flags(cpu->registers.A, cpu->registers.H, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_cp_a_l(cpu_t *cpu, bus_t *bus) {
-    sub_uint8_with_flags(cpu->registers.A, cpu->registers.L, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  sub_uint8_with_flags(cpu->registers.A, cpu->registers.L, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_cp_a_deref_hl(cpu_t *cpu, bus_t *bus) {
-    sub_uint8_with_flags(cpu->registers.A, bus_read(bus, cpu->registers.HL), &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  sub_uint8_with_flags(cpu->registers.A, bus_read(bus, cpu->registers.HL),
+                       &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_cp_a_a(cpu_t *cpu, bus_t *bus) {
-    sub_uint8_with_flags(cpu->registers.A, cpu->registers.A, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  sub_uint8_with_flags(cpu->registers.A, cpu->registers.A, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ret_nz(cpu_t *cpu, bus_t *bus) {
-    if (!flags_is_z(cpu->registers.F)) {
-        cpu->registers.PC = pop_uint16(cpu, bus);
-        return (instruction_result_t){.cycle_count = 5};
-    }
+  if (!flags_is_z(cpu->registers.F)) {
+    cpu->registers.PC = pop_uint16(cpu, bus);
+    return (instruction_result_t){.cycle_count = 5};
+  }
 
-    return (instruction_result_t){.cycle_count = 2};
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_pop_bc(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.BC = pop_uint16(cpu, bus);
-    return (instruction_result_t){.cycle_count = 3};
+  cpu->registers.BC = pop_uint16(cpu, bus);
+  return (instruction_result_t){.cycle_count = 3};
 }
 
 instruction_result_t instruction_jp_nz_a16(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = read_immediate_u16(cpu, bus);
+  uint16_t address = read_immediate_u16(cpu, bus);
 
-    if (!flags_is_z(cpu->registers.F)) {
-        cpu->registers.PC = address;
-        return (instruction_result_t){.cycle_count = 4};
-    }
+  if (!flags_is_z(cpu->registers.F)) {
+    cpu->registers.PC = address;
+    return (instruction_result_t){.cycle_count = 4};
+  }
 
-    return (instruction_result_t){.cycle_count = 3};
+  return (instruction_result_t){.cycle_count = 3};
 }
 
 instruction_result_t instruction_jp_a16(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.PC = read_immediate_u16(cpu, bus);
-    return (instruction_result_t){.cycle_count = 4};
+  cpu->registers.PC = read_immediate_u16(cpu, bus);
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_call_nz_a16(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = read_immediate_u16(cpu, bus);
+  uint16_t address = read_immediate_u16(cpu, bus);
 
-    if (!flags_is_z(cpu->registers.F)) {
-        push_uint16(cpu, bus, cpu->registers.PC);
-        cpu->registers.PC = address;
-        return (instruction_result_t){.cycle_count = 6};
-    }
-
-    return (instruction_result_t){.cycle_count = 3};
-}
-
-instruction_result_t instruction_push_bc(cpu_t *cpu, bus_t *bus) {
-    push_uint16(cpu, bus, cpu->registers.BC);
-    return (instruction_result_t){.cycle_count = 4};
-}
-
-instruction_result_t instruction_add_a_n8(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = add_uint8_with_flags(cpu->registers.A, read_immediate_u8(cpu, bus), &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
-}
-
-instruction_result_t instruction_rst_00(cpu_t *cpu, bus_t *bus) {
-    push_uint16(cpu, bus, cpu->registers.PC);
-    cpu->registers.PC = 0x00;
-    return (instruction_result_t){.cycle_count = 4};
-}
-
-instruction_result_t instruction_ret_z(cpu_t *cpu, bus_t *bus) {
-    if (flags_is_z(cpu->registers.F)) {
-        cpu->registers.PC = pop_uint16(cpu, bus);
-        return (instruction_result_t){.cycle_count = 5};
-    }
-
-    return (instruction_result_t){.cycle_count = 2};
-}
-
-instruction_result_t instruction_ret(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.PC = pop_uint16(cpu, bus);
-    return (instruction_result_t){.cycle_count = 4};
-}
-
-instruction_result_t instruction_jp_z_a16(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = read_immediate_u16(cpu, bus);
-
-    if (flags_is_z(cpu->registers.F)) {
-        cpu->registers.PC = address;
-        return (instruction_result_t){.cycle_count = 4};
-    }
-
-    return (instruction_result_t){.cycle_count = 3};
-}
-
-instruction_result_t instruction_prefix(cpu_t *cpu, bus_t *bus) {
-    uint8_t next_opcode = bus_read(bus, cpu->registers.PC++);
-    instruction_t instruction = extended_instructions[next_opcode];
-    return instruction.handler(cpu, bus);
-}
-
-instruction_result_t instruction_call_z_a16(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = read_immediate_u16(cpu, bus);
-
-    if (flags_is_z(cpu->registers.F)) {
-        push_uint16(cpu, bus, cpu->registers.PC);
-        cpu->registers.PC = address;
-        return (instruction_result_t){.cycle_count = 6};
-    }
-
-    return (instruction_result_t){.cycle_count = 3};
-}
-
-instruction_result_t instruction_call_a16(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = read_immediate_u16(cpu, bus);
+  if (!flags_is_z(cpu->registers.F)) {
     push_uint16(cpu, bus, cpu->registers.PC);
     cpu->registers.PC = address;
     return (instruction_result_t){.cycle_count = 6};
+  }
+
+  return (instruction_result_t){.cycle_count = 3};
+}
+
+instruction_result_t instruction_push_bc(cpu_t *cpu, bus_t *bus) {
+  push_uint16(cpu, bus, cpu->registers.BC);
+  return (instruction_result_t){.cycle_count = 4};
+}
+
+instruction_result_t instruction_add_a_n8(cpu_t *cpu, bus_t *bus) {
+  cpu->registers.A = add_uint8_with_flags(
+      cpu->registers.A, read_immediate_u8(cpu, bus), &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
+}
+
+instruction_result_t instruction_rst_00(cpu_t *cpu, bus_t *bus) {
+  push_uint16(cpu, bus, cpu->registers.PC);
+  cpu->registers.PC = 0x00;
+  return (instruction_result_t){.cycle_count = 4};
+}
+
+instruction_result_t instruction_ret_z(cpu_t *cpu, bus_t *bus) {
+  if (flags_is_z(cpu->registers.F)) {
+    cpu->registers.PC = pop_uint16(cpu, bus);
+    return (instruction_result_t){.cycle_count = 5};
+  }
+
+  return (instruction_result_t){.cycle_count = 2};
+}
+
+instruction_result_t instruction_ret(cpu_t *cpu, bus_t *bus) {
+  cpu->registers.PC = pop_uint16(cpu, bus);
+  return (instruction_result_t){.cycle_count = 4};
+}
+
+instruction_result_t instruction_jp_z_a16(cpu_t *cpu, bus_t *bus) {
+  uint16_t address = read_immediate_u16(cpu, bus);
+
+  if (flags_is_z(cpu->registers.F)) {
+    cpu->registers.PC = address;
+    return (instruction_result_t){.cycle_count = 4};
+  }
+
+  return (instruction_result_t){.cycle_count = 3};
+}
+
+instruction_result_t instruction_prefix(cpu_t *cpu, bus_t *bus) {
+  uint8_t next_opcode = bus_read(bus, cpu->registers.PC++);
+  instruction_t instruction = extended_instructions[next_opcode];
+  return instruction.handler(cpu, bus);
+}
+
+instruction_result_t instruction_call_z_a16(cpu_t *cpu, bus_t *bus) {
+  uint16_t address = read_immediate_u16(cpu, bus);
+
+  if (flags_is_z(cpu->registers.F)) {
+    push_uint16(cpu, bus, cpu->registers.PC);
+    cpu->registers.PC = address;
+    return (instruction_result_t){.cycle_count = 6};
+  }
+
+  return (instruction_result_t){.cycle_count = 3};
+}
+
+instruction_result_t instruction_call_a16(cpu_t *cpu, bus_t *bus) {
+  uint16_t address = read_immediate_u16(cpu, bus);
+  push_uint16(cpu, bus, cpu->registers.PC);
+  cpu->registers.PC = address;
+  return (instruction_result_t){.cycle_count = 6};
 }
 
 instruction_result_t instruction_adc_a_n8(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = adc_uint8_with_flags(cpu->registers.A, read_immediate_u8(cpu, bus), &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.A = adc_uint8_with_flags(
+      cpu->registers.A, read_immediate_u8(cpu, bus), &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_rst_08(cpu_t *cpu, bus_t *bus) {
-    push_uint16(cpu, bus, cpu->registers.PC);
-    cpu->registers.PC = 0x08;
-    return (instruction_result_t){.cycle_count = 4};
+  push_uint16(cpu, bus, cpu->registers.PC);
+  cpu->registers.PC = 0x08;
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_ret_nc(cpu_t *cpu, bus_t *bus) {
-    if (!flags_is_c(cpu->registers.F)) {
-        cpu->registers.PC = pop_uint16(cpu, bus);
-        return (instruction_result_t){.cycle_count = 5};
-    }
+  if (!flags_is_c(cpu->registers.F)) {
+    cpu->registers.PC = pop_uint16(cpu, bus);
+    return (instruction_result_t){.cycle_count = 5};
+  }
 
-    return (instruction_result_t){.cycle_count = 2};
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_pop_de(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.DE = pop_uint16(cpu, bus);
-    return (instruction_result_t){.cycle_count = 3};
+  cpu->registers.DE = pop_uint16(cpu, bus);
+  return (instruction_result_t){.cycle_count = 3};
 }
 
 instruction_result_t instruction_jp_nc_a16(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = read_immediate_u16(cpu, bus);
+  uint16_t address = read_immediate_u16(cpu, bus);
 
-    if (!flags_is_c(cpu->registers.F)) {
-        cpu->registers.PC = address;
-        return (instruction_result_t){.cycle_count = 4};
-    }
+  if (!flags_is_c(cpu->registers.F)) {
+    cpu->registers.PC = address;
+    return (instruction_result_t){.cycle_count = 4};
+  }
 
-    return (instruction_result_t){.cycle_count = 3};
+  return (instruction_result_t){.cycle_count = 3};
 }
 
 instruction_result_t instruction_illegal_d3(cpu_t *cpu, bus_t *bus) {
-    assert(0 && "0xD3\" / \"instruction_illegal_d3\" not implemented.");
+  assert(0 && "0xD3\" / \"instruction_illegal_d3\" not implemented.");
 }
 
 instruction_result_t instruction_call_nc_a16(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = read_immediate_u16(cpu, bus);
+  uint16_t address = read_immediate_u16(cpu, bus);
 
-    if (!flags_is_c(cpu->registers.F)) {
-        push_uint16(cpu, bus, cpu->registers.PC);
-        cpu->registers.PC = address;
-        return (instruction_result_t){.cycle_count = 6};
-    }
+  if (!flags_is_c(cpu->registers.F)) {
+    push_uint16(cpu, bus, cpu->registers.PC);
+    cpu->registers.PC = address;
+    return (instruction_result_t){.cycle_count = 6};
+  }
 
-    return (instruction_result_t){.cycle_count = 3};
+  return (instruction_result_t){.cycle_count = 3};
 }
 
 instruction_result_t instruction_push_de(cpu_t *cpu, bus_t *bus) {
-    push_uint16(cpu, bus, cpu->registers.DE);
-    return (instruction_result_t){.cycle_count = 4};
+  push_uint16(cpu, bus, cpu->registers.DE);
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_sub_a_n8(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = sub_uint8_with_flags(cpu->registers.A, read_immediate_u8(cpu, bus), &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = sub_uint8_with_flags(
+      cpu->registers.A, read_immediate_u8(cpu, bus), &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rst_10(cpu_t *cpu, bus_t *bus) {
-    push_uint16(cpu, bus, cpu->registers.PC);
-    cpu->registers.PC = 0x10;
-    return (instruction_result_t){.cycle_count = 4};
+  push_uint16(cpu, bus, cpu->registers.PC);
+  cpu->registers.PC = 0x10;
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_ret_c(cpu_t *cpu, bus_t *bus) {
-    if (flags_is_c(cpu->registers.F)) {
-        cpu->registers.PC = pop_uint16(cpu, bus);
-        return (instruction_result_t){.cycle_count = 5};
-    }
+  if (flags_is_c(cpu->registers.F)) {
+    cpu->registers.PC = pop_uint16(cpu, bus);
+    return (instruction_result_t){.cycle_count = 5};
+  }
 
-    return (instruction_result_t){.cycle_count = 2};
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_reti(cpu_t *cpu, bus_t *bus) {
-    cpu->ime = 1;
-    cpu->registers.PC = pop_uint16(cpu, bus);
-    return (instruction_result_t){.cycle_count = 4};
+  cpu->ime = 1;
+  cpu->registers.PC = pop_uint16(cpu, bus);
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_jp_c_a16(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = read_immediate_u16(cpu, bus);
+  uint16_t address = read_immediate_u16(cpu, bus);
 
-    if (flags_is_c(cpu->registers.F)) {
-        cpu->registers.PC = address;
-        return (instruction_result_t){.cycle_count = 4};
-    }
+  if (flags_is_c(cpu->registers.F)) {
+    cpu->registers.PC = address;
+    return (instruction_result_t){.cycle_count = 4};
+  }
 
-    return (instruction_result_t){.cycle_count = 3};
+  return (instruction_result_t){.cycle_count = 3};
 }
 
 instruction_result_t instruction_illegal_db(cpu_t *cpu, bus_t *bus) {
-    assert(0 && "0xDB\" / \"instruction_illegal_db\" not implemented.");
+  assert(0 && "0xDB\" / \"instruction_illegal_db\" not implemented.");
 }
 
 instruction_result_t instruction_call_c_a16(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = read_immediate_u16(cpu, bus);
+  uint16_t address = read_immediate_u16(cpu, bus);
 
-    if (flags_is_c(cpu->registers.F)) {
-        push_uint16(cpu, bus, cpu->registers.PC);
-        cpu->registers.PC = address;
-        return (instruction_result_t){.cycle_count = 6};
-    }
+  if (flags_is_c(cpu->registers.F)) {
+    push_uint16(cpu, bus, cpu->registers.PC);
+    cpu->registers.PC = address;
+    return (instruction_result_t){.cycle_count = 6};
+  }
 
-    return (instruction_result_t){.cycle_count = 3};
+  return (instruction_result_t){.cycle_count = 3};
 }
 
 instruction_result_t instruction_illegal_dd(cpu_t *cpu, bus_t *bus) {
-    assert(0 && "0xDD\" / \"instruction_illegal_dd\" not implemented.");
+  assert(0 && "0xDD\" / \"instruction_illegal_dd\" not implemented.");
 }
 
 instruction_result_t instruction_sbc_a_n8(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = sbc_uint8_with_flags(cpu->registers.A, read_immediate_u8(cpu, bus), &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = sbc_uint8_with_flags(
+      cpu->registers.A, read_immediate_u8(cpu, bus), &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rst_18(cpu_t *cpu, bus_t *bus) {
-    push_uint16(cpu, bus, cpu->registers.PC);
-    cpu->registers.PC = 0x18;
-    return (instruction_result_t){.cycle_count = 4};
+  push_uint16(cpu, bus, cpu->registers.PC);
+  cpu->registers.PC = 0x18;
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_ldh_deref_a8_a(cpu_t *cpu, bus_t *bus) {
-    bus_write(bus, 0xFF00 + read_immediate_u8(cpu, bus), cpu->registers.A);
-    return (instruction_result_t){.cycle_count = 3};
+  bus_write(bus, 0xFF00 + read_immediate_u8(cpu, bus), cpu->registers.A);
+  return (instruction_result_t){.cycle_count = 3};
 }
 
 instruction_result_t instruction_pop_hl(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.HL = pop_uint16(cpu, bus);
-    return (instruction_result_t){.cycle_count = 3};
+  cpu->registers.HL = pop_uint16(cpu, bus);
+  return (instruction_result_t){.cycle_count = 3};
 }
 
 instruction_result_t instruction_ldh_deref_c_a(cpu_t *cpu, bus_t *bus) {
-    bus_write(bus, 0xFF00 + cpu->registers.C, cpu->registers.A);
-    return (instruction_result_t){.cycle_count = 2};
+  bus_write(bus, 0xFF00 + cpu->registers.C, cpu->registers.A);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_illegal_e3(cpu_t *cpu, bus_t *bus) {
-    assert(0 && "0xE3\" / \"instruction_illegal_e3\" not implemented.");
+  assert(0 && "0xE3\" / \"instruction_illegal_e3\" not implemented.");
 }
 
 instruction_result_t instruction_illegal_e4(cpu_t *cpu, bus_t *bus) {
-    assert(0 && "0xE4\" / \"instruction_illegal_e4\" not implemented.");
+  assert(0 && "0xE4\" / \"instruction_illegal_e4\" not implemented.");
 }
 
 instruction_result_t instruction_push_hl(cpu_t *cpu, bus_t *bus) {
-    push_uint16(cpu, bus, cpu->registers.HL);
-    return (instruction_result_t){.cycle_count = 4};
+  push_uint16(cpu, bus, cpu->registers.HL);
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_and_a_n8(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = and_uint8_with_flags(cpu->registers.A, read_immediate_u8(cpu, bus), &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = and_uint8_with_flags(
+      cpu->registers.A, read_immediate_u8(cpu, bus), &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rst_20(cpu_t *cpu, bus_t *bus) {
-    push_uint16(cpu, bus, cpu->registers.PC);
-    cpu->registers.PC = 0x20;
-    return (instruction_result_t){.cycle_count = 4};
+  push_uint16(cpu, bus, cpu->registers.PC);
+  cpu->registers.PC = 0x20;
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_add_sp_e8(cpu_t *cpu, bus_t *bus) {
-    uint16_t left = cpu->registers.SP;
-    uint16_t right = uint8_sign_extend_uint16(read_immediate_u8(cpu, bus));
-    cpu->registers.SP = left + right;
+  uint16_t left = cpu->registers.SP;
+  uint16_t right = uint8_sign_extend_uint16(read_immediate_u8(cpu, bus));
+  cpu->registers.SP = left + right;
 
-    flags_reset_z(&cpu->registers.F);
-    flags_reset_n(&cpu->registers.F);
+  flags_reset_z(&cpu->registers.F);
+  flags_reset_n(&cpu->registers.F);
 
-    if (add_has_half_overflow_uint8(left, right)) flags_set_h(&cpu->registers.F);
-    else flags_reset_h(&cpu->registers.F);
+  if (add_has_half_overflow_uint8(left, right))
+    flags_set_h(&cpu->registers.F);
+  else
+    flags_reset_h(&cpu->registers.F);
 
-    if (add_has_overflow_uint8(left, right)) flags_set_c(&cpu->registers.F);
-    else flags_reset_c(&cpu->registers.F);
+  if (add_has_overflow_uint8(left, right))
+    flags_set_c(&cpu->registers.F);
+  else
+    flags_reset_c(&cpu->registers.F);
 
-    return (instruction_result_t){.cycle_count = 4};
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_jp_hl(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.PC = cpu->registers.HL;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->registers.PC = cpu->registers.HL;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_ld_deref_a16_a(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = read_immediate_u16(cpu, bus);
-    bus_write(bus, address, cpu->registers.A);
-    return (instruction_result_t){.cycle_count = 4};
+  uint16_t address = read_immediate_u16(cpu, bus);
+  bus_write(bus, address, cpu->registers.A);
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_illegal_eb(cpu_t *cpu, bus_t *bus) {
-    assert(0 && "0xEB\" / \"instruction_illegal_eb\" not implemented.");
+  assert(0 && "0xEB\" / \"instruction_illegal_eb\" not implemented.");
 }
 
 instruction_result_t instruction_illegal_ec(cpu_t *cpu, bus_t *bus) {
-    assert(0 && "0xEC\" / \"instruction_illegal_ec\" not implemented.");
+  assert(0 && "0xEC\" / \"instruction_illegal_ec\" not implemented.");
 }
 
 instruction_result_t instruction_illegal_ed(cpu_t *cpu, bus_t *bus) {
-    assert(0 && "0xED\" / \"instruction_illegal_ed\" not implemented.");
+  assert(0 && "0xED\" / \"instruction_illegal_ed\" not implemented.");
 }
 
 instruction_result_t instruction_xor_a_n8(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = xor_uint8_with_flags(cpu->registers.A, read_immediate_u8(cpu, bus), &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = xor_uint8_with_flags(
+      cpu->registers.A, read_immediate_u8(cpu, bus), &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rst_28(cpu_t *cpu, bus_t *bus) {
-    push_uint16(cpu, bus, cpu->registers.PC);
-    cpu->registers.PC = 0x28;
-    return (instruction_result_t){.cycle_count = 4};
+  push_uint16(cpu, bus, cpu->registers.PC);
+  cpu->registers.PC = 0x28;
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_ldh_a_deref_a8(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = bus_read(bus, 0xFF00 + read_immediate_u8(cpu, bus));
-    return (instruction_result_t){.cycle_count = 3};
+  cpu->registers.A = bus_read(bus, 0xFF00 + read_immediate_u8(cpu, bus));
+  return (instruction_result_t){.cycle_count = 3};
 }
 
 instruction_result_t instruction_pop_af(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.F = pop_uint8(cpu, bus) & 0xF0; // Only read bits needed for flags
-    cpu->registers.A = pop_uint8(cpu, bus);
-    return (instruction_result_t){.cycle_count = 3};
+  cpu->registers.F =
+      pop_uint8(cpu, bus) & 0xF0; // Only read bits needed for flags
+  cpu->registers.A = pop_uint8(cpu, bus);
+  return (instruction_result_t){.cycle_count = 3};
 }
 
 instruction_result_t instruction_ldh_a_deref_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = bus_read(bus, 0xFF00 + cpu->registers.C);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = bus_read(bus, 0xFF00 + cpu->registers.C);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_di(cpu_t *cpu, bus_t *bus) {
-    cpu->ime = 0;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->ime = 0;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_illegal_f4(cpu_t *cpu, bus_t *bus) {
-    assert(0 && "0xF4\" / \"instruction_illegal_f4\" not implemented.");
+  assert(0 && "0xF4\" / \"instruction_illegal_f4\" not implemented.");
 }
 
 instruction_result_t instruction_push_af(cpu_t *cpu, bus_t *bus) {
-    push_uint16(cpu, bus, cpu->registers.AF);
-    return (instruction_result_t){.cycle_count = 4};
+  push_uint16(cpu, bus, cpu->registers.AF);
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_or_a_n8(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = or_uint8_with_flags(cpu->registers.A, read_immediate_u8(cpu, bus), &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = or_uint8_with_flags(
+      cpu->registers.A, read_immediate_u8(cpu, bus), &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rst_30(cpu_t *cpu, bus_t *bus) {
-    push_uint16(cpu, bus, cpu->registers.PC);
-    cpu->registers.PC = 0x30;
-    return (instruction_result_t){.cycle_count = 4};
+  push_uint16(cpu, bus, cpu->registers.PC);
+  cpu->registers.PC = 0x30;
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_ld_hl_inc_sp_e8(cpu_t *cpu, bus_t *bus) {
-    uint16_t left = cpu->registers.SP;
-    uint16_t right = uint8_sign_extend_uint16(read_immediate_u8(cpu, bus));
-    cpu->registers.HL = left + right;
+  uint16_t left = cpu->registers.SP;
+  uint16_t right = uint8_sign_extend_uint16(read_immediate_u8(cpu, bus));
+  cpu->registers.HL = left + right;
 
-    flags_reset_z(&cpu->registers.F);
-    flags_reset_n(&cpu->registers.F);
+  flags_reset_z(&cpu->registers.F);
+  flags_reset_n(&cpu->registers.F);
 
-    if (add_has_half_overflow_uint8(left, right)) flags_set_h(&cpu->registers.F);
-    else flags_reset_h(&cpu->registers.F);
+  if (add_has_half_overflow_uint8(left, right))
+    flags_set_h(&cpu->registers.F);
+  else
+    flags_reset_h(&cpu->registers.F);
 
-    if (add_has_overflow_uint8(left, right)) flags_set_c(&cpu->registers.F);
-    else flags_reset_c(&cpu->registers.F);
+  if (add_has_overflow_uint8(left, right))
+    flags_set_c(&cpu->registers.F);
+  else
+    flags_reset_c(&cpu->registers.F);
 
-    return (instruction_result_t){.cycle_count = 3};
+  return (instruction_result_t){.cycle_count = 3};
 }
 
 instruction_result_t instruction_ld_sp_hl(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.SP = cpu->registers.HL;
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.SP = cpu->registers.HL;
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_ld_a_deref_a16(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = bus_read(bus, read_immediate_u16(cpu, bus));
-    return (instruction_result_t){.cycle_count = 4};
+  cpu->registers.A = bus_read(bus, read_immediate_u16(cpu, bus));
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_ei(cpu_t *cpu, bus_t *bus) {
-    cpu->ime = 1;
-    return (instruction_result_t){.cycle_count = 1};
+  cpu->ime = 1;
+  return (instruction_result_t){.cycle_count = 1};
 }
 
 instruction_result_t instruction_illegal_fc(cpu_t *cpu, bus_t *bus) {
-    assert(0 && "0xFC\" / \"instruction_illegal_fc\" not implemented.");
+  assert(0 && "0xFC\" / \"instruction_illegal_fc\" not implemented.");
 }
 
 instruction_result_t instruction_illegal_fd(cpu_t *cpu, bus_t *bus) {
-    assert(0 && "0xFD\" / \"instruction_illegal_fd\" not implemented.");
+  assert(0 && "0xFD\" / \"instruction_illegal_fd\" not implemented.");
 }
 
 instruction_result_t instruction_cp_a_n8(cpu_t *cpu, bus_t *bus) {
-    sub_uint8_with_flags(cpu->registers.A, read_immediate_u8(cpu, bus), &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  sub_uint8_with_flags(cpu->registers.A, read_immediate_u8(cpu, bus),
+                       &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rst_38(cpu_t *cpu, bus_t *bus) {
-    push_uint16(cpu, bus, cpu->registers.PC);
-    cpu->registers.PC = 0x38;
-    return (instruction_result_t){.cycle_count = 4};
+  push_uint16(cpu, bus, cpu->registers.PC);
+  cpu->registers.PC = 0x38;
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_rlc_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = rlc_uint8_with_flags(cpu->registers.B, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = rlc_uint8_with_flags(cpu->registers.B, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rlc_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = rlc_uint8_with_flags(cpu->registers.C, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = rlc_uint8_with_flags(cpu->registers.C, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rlc_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = rlc_uint8_with_flags(cpu->registers.D, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = rlc_uint8_with_flags(cpu->registers.D, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rlc_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = rlc_uint8_with_flags(cpu->registers.E, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = rlc_uint8_with_flags(cpu->registers.E, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rlc_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = rlc_uint8_with_flags(cpu->registers.H, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = rlc_uint8_with_flags(cpu->registers.H, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rlc_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = rlc_uint8_with_flags(cpu->registers.L, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = rlc_uint8_with_flags(cpu->registers.L, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rlc_deref_hl(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = cpu->registers.HL;
-    bus_write(bus, address, rlc_uint8_with_flags(bus_read(bus, cpu->registers.HL), &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 4};
+  uint16_t address = cpu->registers.HL;
+  bus_write(bus, address,
+            rlc_uint8_with_flags(bus_read(bus, cpu->registers.HL),
+                                 &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_rlc_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = rlc_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = rlc_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rrc_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = rrc_uint8_with_flags(cpu->registers.B, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = rrc_uint8_with_flags(cpu->registers.B, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rrc_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = rrc_uint8_with_flags(cpu->registers.C, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = rrc_uint8_with_flags(cpu->registers.C, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rrc_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = rrc_uint8_with_flags(cpu->registers.D, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = rrc_uint8_with_flags(cpu->registers.D, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rrc_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = rrc_uint8_with_flags(cpu->registers.E, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = rrc_uint8_with_flags(cpu->registers.E, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rrc_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = rrc_uint8_with_flags(cpu->registers.H, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = rrc_uint8_with_flags(cpu->registers.H, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rrc_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = rrc_uint8_with_flags(cpu->registers.L, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = rrc_uint8_with_flags(cpu->registers.L, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rrc_deref_hl(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = cpu->registers.HL;
-    bus_write(bus, address, rrc_uint8_with_flags(bus_read(bus, cpu->registers.HL), &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 4};
+  uint16_t address = cpu->registers.HL;
+  bus_write(bus, address,
+            rrc_uint8_with_flags(bus_read(bus, cpu->registers.HL),
+                                 &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_rrc_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = rrc_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = rrc_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rl_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = rl_uint8_with_flags(cpu->registers.B, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = rl_uint8_with_flags(cpu->registers.B, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rl_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = rl_uint8_with_flags(cpu->registers.C, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = rl_uint8_with_flags(cpu->registers.C, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rl_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = rl_uint8_with_flags(cpu->registers.D, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = rl_uint8_with_flags(cpu->registers.D, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rl_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = rl_uint8_with_flags(cpu->registers.E, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = rl_uint8_with_flags(cpu->registers.E, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rl_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = rl_uint8_with_flags(cpu->registers.H, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = rl_uint8_with_flags(cpu->registers.H, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rl_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = rl_uint8_with_flags(cpu->registers.L, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = rl_uint8_with_flags(cpu->registers.L, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rl_deref_hl(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = cpu->registers.HL;
-    bus_write(bus, address, rl_uint8_with_flags(bus_read(bus, cpu->registers.HL), &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 4};
+  uint16_t address = cpu->registers.HL;
+  bus_write(
+      bus, address,
+      rl_uint8_with_flags(bus_read(bus, cpu->registers.HL), &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_rl_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = rl_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = rl_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rr_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = rr_uint8_with_flags(cpu->registers.B, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = rr_uint8_with_flags(cpu->registers.B, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rr_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = rr_uint8_with_flags(cpu->registers.C, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = rr_uint8_with_flags(cpu->registers.C, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rr_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = rr_uint8_with_flags(cpu->registers.D, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = rr_uint8_with_flags(cpu->registers.D, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rr_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = rr_uint8_with_flags(cpu->registers.E, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = rr_uint8_with_flags(cpu->registers.E, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rr_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = rr_uint8_with_flags(cpu->registers.H, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = rr_uint8_with_flags(cpu->registers.H, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rr_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = rr_uint8_with_flags(cpu->registers.L, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = rr_uint8_with_flags(cpu->registers.L, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_rr_deref_hl(cpu_t *cpu, bus_t *bus) {
-    bus_write(bus, cpu->registers.HL, rr_uint8_with_flags(bus_read(bus, cpu->registers.HL), &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 4};
+  bus_write(
+      bus, cpu->registers.HL,
+      rr_uint8_with_flags(bus_read(bus, cpu->registers.HL), &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_rr_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = rr_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = rr_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_sla_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = sl_uint8_with_flags(cpu->registers.B, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = sl_uint8_with_flags(cpu->registers.B, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_sla_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = sl_uint8_with_flags(cpu->registers.C, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = sl_uint8_with_flags(cpu->registers.C, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_sla_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = sl_uint8_with_flags(cpu->registers.D, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = sl_uint8_with_flags(cpu->registers.D, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_sla_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = sl_uint8_with_flags(cpu->registers.E, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = sl_uint8_with_flags(cpu->registers.E, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_sla_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = sl_uint8_with_flags(cpu->registers.H, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = sl_uint8_with_flags(cpu->registers.H, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_sla_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = sl_uint8_with_flags(cpu->registers.L, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = sl_uint8_with_flags(cpu->registers.L, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_sla_deref_hl(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = cpu->registers.HL;
-    bus_write(bus, address, sl_uint8_with_flags(bus_read(bus, cpu->registers.HL), &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 4};
+  uint16_t address = cpu->registers.HL;
+  bus_write(
+      bus, address,
+      sl_uint8_with_flags(bus_read(bus, cpu->registers.HL), &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_sla_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = sl_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = sl_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_sra_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = sra_uint8_with_flags(cpu->registers.B, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = sra_uint8_with_flags(cpu->registers.B, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_sra_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = sra_uint8_with_flags(cpu->registers.C, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = sra_uint8_with_flags(cpu->registers.C, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_sra_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = sra_uint8_with_flags(cpu->registers.D, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = sra_uint8_with_flags(cpu->registers.D, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_sra_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = sra_uint8_with_flags(cpu->registers.E, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = sra_uint8_with_flags(cpu->registers.E, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_sra_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = sra_uint8_with_flags(cpu->registers.H, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = sra_uint8_with_flags(cpu->registers.H, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_sra_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = sra_uint8_with_flags(cpu->registers.L, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = sra_uint8_with_flags(cpu->registers.L, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_sra_deref_hl(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = cpu->registers.HL;
-    bus_write(bus, address, sra_uint8_with_flags(bus_read(bus, cpu->registers.HL), &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 4};
+  uint16_t address = cpu->registers.HL;
+  bus_write(bus, address,
+            sra_uint8_with_flags(bus_read(bus, cpu->registers.HL),
+                                 &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_sra_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = sra_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = sra_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_swap_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = swap_uint8_with_flags(cpu->registers.B, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = swap_uint8_with_flags(cpu->registers.B, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_swap_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = swap_uint8_with_flags(cpu->registers.C, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = swap_uint8_with_flags(cpu->registers.C, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_swap_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = swap_uint8_with_flags(cpu->registers.D, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = swap_uint8_with_flags(cpu->registers.D, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_swap_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = swap_uint8_with_flags(cpu->registers.E, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = swap_uint8_with_flags(cpu->registers.E, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_swap_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = swap_uint8_with_flags(cpu->registers.H, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = swap_uint8_with_flags(cpu->registers.H, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_swap_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = swap_uint8_with_flags(cpu->registers.L, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = swap_uint8_with_flags(cpu->registers.L, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_swap_deref_hl(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = cpu->registers.HL;
-    bus_write(bus, address, swap_uint8_with_flags(bus_read(bus, cpu->registers.HL), &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 4};
+  uint16_t address = cpu->registers.HL;
+  bus_write(bus, address,
+            swap_uint8_with_flags(bus_read(bus, cpu->registers.HL),
+                                  &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_swap_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = swap_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = swap_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_srl_b(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.B = srl_uint8_with_flags(cpu->registers.B, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.B = srl_uint8_with_flags(cpu->registers.B, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_srl_c(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.C = srl_uint8_with_flags(cpu->registers.C, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.C = srl_uint8_with_flags(cpu->registers.C, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_srl_d(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.D = srl_uint8_with_flags(cpu->registers.D, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.D = srl_uint8_with_flags(cpu->registers.D, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_srl_e(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.E = srl_uint8_with_flags(cpu->registers.E, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.E = srl_uint8_with_flags(cpu->registers.E, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_srl_h(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.H = srl_uint8_with_flags(cpu->registers.H, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.H = srl_uint8_with_flags(cpu->registers.H, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_srl_l(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.L = srl_uint8_with_flags(cpu->registers.L, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.L = srl_uint8_with_flags(cpu->registers.L, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
 instruction_result_t instruction_srl_deref_hl(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = cpu->registers.HL;
-    bus_write(bus, address, srl_uint8_with_flags(bus_read(bus, cpu->registers.HL), &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 3};
+  uint16_t address = cpu->registers.HL;
+  bus_write(bus, address,
+            srl_uint8_with_flags(bus_read(bus, cpu->registers.HL),
+                                 &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 3};
 }
 
 instruction_result_t instruction_srl_a(cpu_t *cpu, bus_t *bus) {
-    cpu->registers.A = srl_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 2};
+  cpu->registers.A = srl_uint8_with_flags(cpu->registers.A, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 2};
 }
 
-
 instruction_result_t instruction_bit_0_deref_hl(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(bus_read(bus, cpu->registers.HL), 0, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 3};
+  bit_with_flags(bus_read(bus, cpu->registers.HL), 0, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 3};
 }
 
 instruction_result_t instruction_bit_2_deref_hl(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(bus_read(bus, cpu->registers.HL), 2, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 3};
+  bit_with_flags(bus_read(bus, cpu->registers.HL), 2, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 3};
 }
-
 
 instruction_result_t instruction_bit_1_deref_hl(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(bus_read(bus, cpu->registers.HL), 1, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 3};
+  bit_with_flags(bus_read(bus, cpu->registers.HL), 1, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 3};
 }
-
 
 instruction_result_t instruction_bit_3_deref_hl(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(bus_read(bus, cpu->registers.HL), 3, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 3};
+  bit_with_flags(bus_read(bus, cpu->registers.HL), 3, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 3};
 }
-
 
 instruction_result_t instruction_bit_4_deref_hl(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(bus_read(bus, cpu->registers.HL), 4, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 3};
+  bit_with_flags(bus_read(bus, cpu->registers.HL), 4, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 3};
 }
-
 
 instruction_result_t instruction_bit_5_deref_hl(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(bus_read(bus, cpu->registers.HL), 5, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 3};
+  bit_with_flags(bus_read(bus, cpu->registers.HL), 5, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 3};
 }
 
-
 instruction_result_t instruction_bit_6_deref_hl(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(bus_read(bus, cpu->registers.HL), 6, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 3};
+  bit_with_flags(bus_read(bus, cpu->registers.HL), 6, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 3};
 }
 
 instruction_result_t instruction_bit_7_deref_hl(cpu_t *cpu, bus_t *bus) {
-    bit_with_flags(bus_read(bus, cpu->registers.HL), 7, &cpu->registers.F);
-    return (instruction_result_t){.cycle_count = 3};
+  bit_with_flags(bus_read(bus, cpu->registers.HL), 7, &cpu->registers.F);
+  return (instruction_result_t){.cycle_count = 3};
 }
 
-
 instruction_result_t instruction_res_0_deref_hl(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = cpu->registers.HL;
-    bus_write(bus, address, reset_with_flags(bus_read(bus, address), 0, &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 4};
+  uint16_t address = cpu->registers.HL;
+  bus_write(bus, address,
+            reset_with_flags(bus_read(bus, address), 0, &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_res_1_deref_hl(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = cpu->registers.HL;
-    bus_write(bus, address, reset_with_flags(bus_read(bus, address), 1, &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 4};
+  uint16_t address = cpu->registers.HL;
+  bus_write(bus, address,
+            reset_with_flags(bus_read(bus, address), 1, &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 4};
 }
-
 
 instruction_result_t instruction_res_2_deref_hl(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = cpu->registers.HL;
-    bus_write(bus, address, reset_with_flags(bus_read(bus, address), 2, &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 4};
+  uint16_t address = cpu->registers.HL;
+  bus_write(bus, address,
+            reset_with_flags(bus_read(bus, address), 2, &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 4};
 }
 
-
 instruction_result_t instruction_res_3_deref_hl(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = cpu->registers.HL;
-    bus_write(bus, address, reset_with_flags(bus_read(bus, address), 3, &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 4};
+  uint16_t address = cpu->registers.HL;
+  bus_write(bus, address,
+            reset_with_flags(bus_read(bus, address), 3, &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_res_4_deref_hl(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = cpu->registers.HL;
-    bus_write(bus, address, reset_with_flags(bus_read(bus, address), 4, &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 4};
+  uint16_t address = cpu->registers.HL;
+  bus_write(bus, address,
+            reset_with_flags(bus_read(bus, address), 4, &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 4};
 }
-
 
 instruction_result_t instruction_res_5_deref_hl(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = cpu->registers.HL;
-    bus_write(bus, address, reset_with_flags(bus_read(bus, address), 5, &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 4};
+  uint16_t address = cpu->registers.HL;
+  bus_write(bus, address,
+            reset_with_flags(bus_read(bus, address), 5, &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 4};
 }
-
 
 instruction_result_t instruction_res_6_deref_hl(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = cpu->registers.HL;
-    bus_write(bus, address, reset_with_flags(bus_read(bus, address), 6, &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 4};
+  uint16_t address = cpu->registers.HL;
+  bus_write(bus, address,
+            reset_with_flags(bus_read(bus, address), 6, &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 4};
 }
 
-
 instruction_result_t instruction_res_7_deref_hl(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = cpu->registers.HL;
-    bus_write(bus, address, reset_with_flags(bus_read(bus, address), 7, &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 4};
+  uint16_t address = cpu->registers.HL;
+  bus_write(bus, address,
+            reset_with_flags(bus_read(bus, address), 7, &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 4};
 }
 
 instruction_result_t instruction_set_0_deref_hl(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = cpu->registers.HL;
-    bus_write(bus, address, set_with_flags(bus_read(bus, address), 0, &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 4};
+  uint16_t address = cpu->registers.HL;
+  bus_write(bus, address,
+            set_with_flags(bus_read(bus, address), 0, &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 4};
 }
-
 
 instruction_result_t instruction_set_1_deref_hl(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = cpu->registers.HL;
-    bus_write(bus, address, set_with_flags(bus_read(bus, address), 1, &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 4};
+  uint16_t address = cpu->registers.HL;
+  bus_write(bus, address,
+            set_with_flags(bus_read(bus, address), 1, &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 4};
 }
-
 
 instruction_result_t instruction_set_2_deref_hl(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = cpu->registers.HL;
-    bus_write(bus, address, set_with_flags(bus_read(bus, address), 2, &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 4};
+  uint16_t address = cpu->registers.HL;
+  bus_write(bus, address,
+            set_with_flags(bus_read(bus, address), 2, &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 4};
 }
-
 
 instruction_result_t instruction_set_3_deref_hl(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = cpu->registers.HL;
-    bus_write(bus, address, set_with_flags(bus_read(bus, address), 3, &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 4};
+  uint16_t address = cpu->registers.HL;
+  bus_write(bus, address,
+            set_with_flags(bus_read(bus, address), 3, &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 4};
 }
-
 
 instruction_result_t instruction_set_4_deref_hl(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = cpu->registers.HL;
-    bus_write(bus, address, set_with_flags(bus_read(bus, address), 4, &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 4};
+  uint16_t address = cpu->registers.HL;
+  bus_write(bus, address,
+            set_with_flags(bus_read(bus, address), 4, &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 4};
 }
-
 
 instruction_result_t instruction_set_5_deref_hl(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = cpu->registers.HL;
-    bus_write(bus, address, set_with_flags(bus_read(bus, address), 5, &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 4};
+  uint16_t address = cpu->registers.HL;
+  bus_write(bus, address,
+            set_with_flags(bus_read(bus, address), 5, &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 4};
 }
-
 
 instruction_result_t instruction_set_6_deref_hl(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = cpu->registers.HL;
-    bus_write(bus, address, set_with_flags(bus_read(bus, address), 6, &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 4};
+  uint16_t address = cpu->registers.HL;
+  bus_write(bus, address,
+            set_with_flags(bus_read(bus, address), 6, &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 4};
 }
-
 
 instruction_result_t instruction_set_7_deref_hl(cpu_t *cpu, bus_t *bus) {
-    uint16_t address = cpu->registers.HL;
-    bus_write(bus, address, set_with_flags(bus_read(bus, address), 7, &cpu->registers.F));
-    return (instruction_result_t){.cycle_count = 4};
+  uint16_t address = cpu->registers.HL;
+  bus_write(bus, address,
+            set_with_flags(bus_read(bus, address), 7, &cpu->registers.F));
+  return (instruction_result_t){.cycle_count = 4};
 }
-
-
-

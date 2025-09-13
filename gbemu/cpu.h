@@ -5,9 +5,9 @@
 #include "registers.h"
 
 typedef struct {
-    registers_t registers;
-    int ime;
-    int halted;
+  registers_t registers;
+  int ime;
+  int halted;
 } cpu_t;
 
 void cpu_create(cpu_t *cpu);
