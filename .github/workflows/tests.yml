@@ -1,0 +1,24 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [ opened, synchronize, reopened, closed ]
+    branches:
+      - master
+
+jobs:
+  run_tests:
+    runs-on: ubuntu-latest
+    name: Tests
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: false
+          fetch-depth: 0
+      - name: Tests
+        run: docker build -f ./docker/gbemu-test.dockerfile .
+

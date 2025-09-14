@@ -17,6 +17,10 @@ add_library(gbemu
         mbcs/mbc3.c
         mbcs/mbc3_ram_battery.c)
 
-target_include_directories(gbemu PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+target_include_directories(gbemu PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 set_property(TARGET gbemu PROPERTY C_STANDARD 11)
+
+if (ENABLE_TESTS)
+    add_subdirectory(tests)
+endif ()

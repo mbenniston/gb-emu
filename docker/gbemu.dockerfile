@@ -3,10 +3,7 @@ FROM emscripten/emsdk:4.0.2 AS gbemu
 WORKDIR /build
 RUN apt-get update && apt-get -y install cmake python3 clang-format clang-tidy
 RUN npm i -g typescript
-COPY .. .
-
-# check formatting
-RUN find . -type f \( -name "*.c" -o -name "*.h" -o -name "*.hpp" -o -name "*.cpp" \) -exec clang-format --dry-run --Werror {} +
+COPY . .
 
 RUN emcmake cmake . -DCMAKE_BUILD_TYPE=Release -DENABLE_NATIVE_BUILD=OFF -DENABLE_BROWSER_LIBRARY=ON
 
@@ -36,11 +33,11 @@ FROM node:22-bullseye AS webapp
 
 WORKDIR /build
 
-COPY ../applications/gbemu-web/package.json .
-COPY ../applications/gbemu-web/package-lock.json .
+COPY ./applications/gbemu-web/package.json .
+COPY ./applications/gbemu-web/package-lock.json .
 RUN npm ci
-COPY ../applications/gbemu-web .
-COPY ../modules/gbemu-bindings/bindings.idl .
+COPY ./applications/gbemu-web .
+COPY ./modules/gbemu-bindings/bindings.idl .
 
 RUN npm run lint:format
 RUN npm run lint:css
