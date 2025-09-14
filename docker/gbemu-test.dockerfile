@@ -7,4 +7,4 @@ RUN find modules -type f \( -name "*.c" -o -name "*.h" -o -name "*.hpp" -o -name
 
 RUN cmake . -DCMAKE_BUILD_TYPE=Debug -DENABLE_NATIVE_BUILD=OFF
 RUN make
-RUN ctest
+RUN ctest --output-on-failure

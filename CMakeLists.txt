@@ -7,11 +7,14 @@ option(ENABLE_INSTALLER "Build the installer for the native version of gbemu" OF
 option(ENABLE_BROWSER_LIBRARY "Build the browser version of gbemu" ON)
 option(ENABLE_TESTS "Enables building tests" ON)
 
-set(CMAKE_CXX_CLANG_TIDY clang-tidy)
-set(CMAKE_C_CLANG_TIDY clang-tidy)
+#set(CMAKE_CXX_CLANG_TIDY clang-tidy)
+#set(CMAKE_C_CLANG_TIDY clang-tidy)
+
+include(cmake/Sanitizers.cmake)
 
 if (ENABLE_TESTS)
     include(CTest)
+    enable_testing()
 endif ()
 
 add_subdirectory("./deps/unity")

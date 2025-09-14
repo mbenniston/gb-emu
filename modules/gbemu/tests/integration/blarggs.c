@@ -1,5 +1,7 @@
 #include "../../../../deps/unity/src/unity.h"
 
+#include <stdlib.h>
+
 void setUp(void) {}
 
 void tearDown(void) {}
@@ -12,6 +14,5 @@ int main(void) {
   UNITY_BEGIN();
 
   RUN_TEST(test_AverageThreeBytes_should_AverageMidRangeValues);
-
   return UNITY_END();
 }

@@ -24,3 +24,7 @@ set_property(TARGET gbemu PROPERTY C_STANDARD 11)
 if (ENABLE_TESTS)
     add_subdirectory(tests)
 endif ()
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    enable_sanitizers(gbemu)
+endif ()

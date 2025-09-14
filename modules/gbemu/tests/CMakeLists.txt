@@ -10,3 +10,8 @@ target_link_libraries(blarggs PRIVATE
 )
 
 add_test(blarggs_test blarggs)
+
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    enable_sanitizers(blarggs)
+endif ()
