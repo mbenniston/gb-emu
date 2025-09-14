@@ -55,4 +55,14 @@ void mbc_write(mbc_t *mbc, uint16_t address, uint8_t data) {
   }
 }
 
-void mbc_destroy(mbc_t *mbc) {}
+void mbc_destroy(mbc_t *mbc) {
+  switch (mbc->type) {
+  case ROM_ONLY:
+  case MBC1:
+    mbc->type = ROM_ONLY;
+    mbc_rom_only_destroy(&mbc->mbc.rom_only);
+    break;
+  default:
+    break;
+  }
+}

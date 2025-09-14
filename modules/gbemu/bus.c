@@ -17,12 +17,13 @@ void bus_create(bus_t *bus, interrupt_controller_t *interrupt_controller,
   bus->ppu = ppu;
   bus->joypad = joypad;
   bus->cartridge = cartridge;
+  bus->user_write_callback = NULL;
+  bus->user_data = NULL;
 }
 
 void bus_write(bus_t *bus, uint16_t address, uint8_t data) {
-  if (address == 0xFF02 && data == 0x81) {
-    printf("%c", bus->memory[0xFF01]);
-    fflush(stdout);
+  if (bus->user_write_callback != NULL) {
+    bus->user_write_callback(bus->user_data, address, data);
   }
 
   // cartridge

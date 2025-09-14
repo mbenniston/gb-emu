@@ -15,5 +15,6 @@ int mbc_rom_only_create(mbc_rom_only_t *mbc, uint8_t *rom_data,
 uint8_t mbc_rom_only_read(mbc_rom_only_t *mbc, uint16_t address);
 
 void mbc_rom_only_write(mbc_rom_only_t *mbc, uint16_t address, uint8_t data);
+void mbc_rom_only_destroy(mbc_rom_only_t *mbc);
 
 #endif

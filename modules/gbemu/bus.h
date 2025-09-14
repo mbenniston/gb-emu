@@ -10,6 +10,9 @@
 #include "ppu.h"
 #include "timer_controller.h"
 
+typedef void (*bus_write_callback)(void *user_data, uint16_t address,
+                                   uint8_t data);
+
 typedef struct bus {
   uint8_t memory[0x10000];
   interrupt_controller_t *interrupt_controller;
@@ -18,6 +21,8 @@ typedef struct bus {
   ppu_t *ppu;
   joypad_t *joypad;
   cartridge_t *cartridge;
+  bus_write_callback user_write_callback;
+  void *user_data;
 } bus_t;
 
 #define WORK_RAM_START_ADDRESS 0xC000
