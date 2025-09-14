@@ -11,14 +11,14 @@ RUN find . -type f \( -name "*.c" -o -name "*.h" -o -name "*.hpp" -o -name "*.cp
 RUN emcmake cmake . -DCMAKE_BUILD_TYPE=Release -DENABLE_NATIVE_BUILD=OFF -DENABLE_BROWSER_LIBRARY=ON
 
 # generate glue code for C++ (compiled into libgbweb-web) and JavaScript (added to --post-js)
-RUN /emsdk/upstream/emscripten/tools/webidl_binder gbemuweb/bindings.idl glue
+RUN /emsdk/upstream/emscripten/tools/webidl_binder modules/gbemu-bindings/bindings.idl glue
 
 RUN emmake make
 
 # extract object files from generated libraries (to avoid symbol stripping)
 RUN mkdir libgbemu_objects libgbemu-web_objects
 RUN emar --output libgbemu_objects -x ./modules/gbemu/libgbemu.a
-RUN emar --output libgbemu-web_objects -x libgbemu-web.a
+RUN emar --output libgbemu-web_objects -x ./modules/gbemu-bindings/libgbemu-bindings.a
 
 # compile to web assembly
 RUN emcc \
@@ -40,7 +40,7 @@ COPY ./applications/gbemu-web/package.json .
 COPY ./applications/gbemu-web/package-lock.json .
 RUN npm ci
 COPY ./applications/gbemu-web .
-COPY ./gbemuweb/bindings.idl .
+COPY modules/gbemu-bindings/bindings.idl .
 
 RUN npm run lint:format
 RUN npm run lint:css

@@ -12,22 +12,14 @@ set(CMAKE_C_CLANG_TIDY clang-tidy)
 add_subdirectory("./modules/gbemu")
 
 if (ENABLE_NATIVE_BUILD)
-add_subdirectory("./applications/gbemu-native")
+    add_subdirectory("./applications/gbemu-native")
     if (ENABLE_INSTALLER)
-        # include(cmake/CreateInstaller.cmake)
+        include(cmake/CreateInstaller.cmake)
     endif ()
 endif ()
 
 if (ENABLE_BROWSER_LIBRARY)
-        add_library(gbemu-web
-                gbemuweb/bindings.cpp
-                gbemuweb/bindings_glue.cpp
-        )
-
-        set_property(TARGET gbemu-web PROPERTY C_STANDARD 11)
-        set_property(TARGET gbemu-web PROPERTY CXX_STANDARD 20)
-
-        target_link_libraries(gbemu-web PRIVATE gbemu)
+    add_subdirectory("./modules/gbemu-bindings")
 endif ()
 
 

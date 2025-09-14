@@ -1,4 +1,4 @@
 #include "bindings.hpp"
 #ifdef __EMSCRIPTEN__
-#include "../glue.cpp"
+#include "../../glue.cpp"
 #endif
