@@ -50,7 +50,7 @@ COPY --from=gbemu /build/gbemu.mjs /build/src
 COPY --from=gbemu /build/gbemu.wasm /build/src
 
 
-COPY .git .
+COPY .git .git
 RUN npm run docs:generate-release-notes
 RUN npm run build
 
