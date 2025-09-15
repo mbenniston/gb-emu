@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "Native",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "ENABLE_NATIVE_BUILD": true,
+        "ENABLE_BROWSER_LIBRARY": false
+      }
+    }
+  ]
+}
